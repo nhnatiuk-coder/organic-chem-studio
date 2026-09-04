@@ -34,7 +34,7 @@ export type Sub = {
 };
 
 function attachChainSub(b: Builder, sub: Sub) {
-  const base = b.atoms[sub.at];
+  const base = b.atoms[sub.at]!;
   const dir = sub.dir ?? -1;
   let prev = sub.at;
   sub.els.forEach((el, i) => {
@@ -83,7 +83,7 @@ export function ring(
     b.bond(i, (i + 1) % n, order);
   }
   (opts.subs ?? []).forEach((s) => {
-    const base = pts[s.at];
+    const base = pts[s.at]!;
     const len = Math.hypot(base.x, base.y) || 1;
     let ux = base.x / len;
     let uy = base.y / len;
