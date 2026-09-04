@@ -122,3 +122,18 @@ export function custom(
   bonds.forEach(([a, c, o]) => b.bond(a, c, o ?? 1));
   return b.done();
 }
+
+/** Hang one extra atom off an existing atom (used for branched substituents). */
+export function attach(
+  s: Structure,
+  from: number,
+  el: string,
+  dx: number,
+  dy: number,
+  order: 1 | 2 | 3 = 1,
+): Structure {
+  const base = s.atoms[from]!;
+  s.atoms.push({ el, x: base.x + dx, y: base.y + dy });
+  s.bonds.push({ a: from, b: s.atoms.length - 1, order });
+  return s;
+}
