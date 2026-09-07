@@ -13,7 +13,7 @@ import {
   type Settings,
 } from "@/lib/session";
 
-export const Route = createFileRoute("/practice")({
+export const Route = createFileRoute("/practice/")({
   head: () => ({
     meta: [
       { title: "Set up your practice set — Organic Nomenclature Studio" },
