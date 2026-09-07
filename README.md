@@ -1,14 +1,42 @@
-# Welcome to your Lovable project
+# Organic Chem Studio
+
+Build a separate, polished web application named "Organic Nomenclature Studio" designed as a Canvas-ready organic chemistry practice activity.
+
+Core student experience:
+- Landing screen briefly explains two modes: "Draw from a Name" and "Name from a Structure".
+- Practice setup lets students select mode (mixed / draw / name), difficulty (intro, intermediate, challenge), and number of questions (5, 10, 15, 20).
+- The question runner has a clear progress indicator, question number, score, and a small optional hint button.
+- Draw-from-name: prompt displays either an IUPAC name or a common name and an embedded Ketcher molecular editor area for drawing. Include a visible, polished Ketcher integration placeholder/component with a clearly labeled fallback demo drawing panel if Ketcher cannot load during preview. Build a clean integration seam suitable for actual Ketcher iframe or React component API integration. On submission, export submitted structure (SMILES/Molfile where integration is available) and check structure identity against stored canonical SMILES; while in preview fallback include understandable feedback rather than claiming auto-structure grading if the editor has not supplied molecular data.
+- Name-from-structure: display a clear skeletal drawing (render SVG locally from structured question data, not a remote image), accept a typed answer, normalize capitalization, whitespace, punctuation, hyphens and standard parenthetical spelling differences. Accept all approved answer aliases, including both appropriate IUPAC and common names.
+- Feedback shows correct/incorrect, accepted correct names, a concise explanation, and Next Question. First incorrect attempt must keep the question active and reveal a hint; after a second attempt show the answer.
+
+Question content requirements:
+- Seed at least 30 genuinely distinct molecules. Do not merely vary a leaving group or a simple substituent on the same skeleton.
+- Cover alkanes, cycloalkanes, branched alkanes, alkenes (including E/Z where applicable), alkynes, alcohols, ethers, aldehydes, ketones, carboxylic acids, esters, amines, alkyl halides, benzene derivatives, phenols, and simple amides.
+- Each molecule record must include canonical SMILES, displayName, acceptedNames array with IUPAC and common-name variants where widely used, difficulty, topic, helpful hint, explanation, and an SVG structure rendering or enough data to render a crisp SVG.
+- Examples must include acetone/propan-2-one, isopropyl alcohol/propan-2-ol, toluene/methylbenzene, phenol/benzenol, acetic acid/ethanoic acid, diethyl ether/ethoxyethane, and isopropylamine/propan-2-amine.
+- Make questions randomly selected without repeats until the active set ends.
+
+Instructor/admin experience:
+- Add a clearly separated Instructor Guide screen explaining how to edit the question bank, add aliases, enable a real Ketcher editor, host the app, and place it in Canvas as an External URL or iframe embed.
+- Provide downloadable-friendly JSON export/import controls for question-bank records in the UI, and use localStorage to preserve any edits for demo purposes.
+- Include a simple instructor setting to toggle common names accepted on/off (when off, only stored IUPAC-style aliases count).
+
+Technical/design:
+- Use React + TypeScript, accessible semantic controls, Tailwind/shadcn-style design, responsive layout, no sign-in requirement, and robust localStorage.
+- Use calm chemistry-inspired visual styling (navy, teal, amber; ample whitespace) with original simple line icons, not stock images.
+- Do not claim native Canvas grade passback or LTI support. State that the standalone version is embed/launch-ready and that grade passback needs a later LTI integration.
+- Build all screens and functional demo interactions. Seed the complete data bank in the code, not as opaque mock data.
 
 This project was built with [Lovable](https://lovable.dev).
 
 ## Build with Lovable
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/8b820bbc-bfd8-48c8-b200-c9bd4774b3ec).
 
 - **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
 ## Development
 
@@ -20,10 +48,3 @@ cd <repository-name>
 npm i
 npm run dev
 ```
-
-## Built with
-
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
