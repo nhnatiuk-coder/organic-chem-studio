@@ -1,4 +1,4 @@
-import { MOLECULES, type Difficulty, type Molecule } from "./molecules";
+import { MOLECULES, type Difficulty, type Molecule, type Topic } from "./molecules";
 
 export type Mode = "mixed" | "draw" | "name";
 export type QuestionKind = "draw" | "name";
@@ -119,6 +119,19 @@ export function clearActive() {
 
 /* ---------------------------- generation ---------------------------- */
 
+/** Topics intentionally hidden from practice until they are introduced in class. */
+const HIDDEN_TOPICS: Topic[] = [
+  "Ethers",
+  "Amides",
+  "Benzene derivatives",
+  "Carboxylic acids",
+  "Esters",
+  "Phenols",
+  "Amines",
+];
+
+const ACTIVE_MOLECULES = MOLECULES.filter((m) => !HIDDEN_TOPICS.includes(m.topic));
+
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -139,8 +152,8 @@ export function pickMolecules(difficulty: Difficulty, count: number): Molecule[]
       : difficulty === "intermediate"
         ? ["intro", "intermediate"]
         : ["intermediate", "challenge"];
-  let pool = MOLECULES.filter((m) => tiers.includes(m.difficulty));
-  if (pool.length < count) pool = MOLECULES;
+  let pool = ACTIVE_MOLECULES.filter((m) => tiers.includes(m.difficulty));
+  if (pool.length < count) pool = ACTIVE_MOLECULES;
   return shuffle(pool).slice(0, Math.min(count, pool.length));
 }
 
@@ -154,8 +167,12 @@ export function kindsFor(mode: Mode, count: number): QuestionKind[] {
 
 /** Distractor structures for a "draw from a name" question. */
 export function choicesFor(target: Molecule): string[] {
-  const sameTopic = MOLECULES.filter((m) => m.id !== target.id && m.topic === target.topic);
-  const others = MOLECULES.filter((m) => m.id !== target.id && m.topic !== target.topic);
+  const sameTopic = ACTIVE_MOLECULES.filter(
+    (m) => m.id !== target.id && m.topic === target.topic,
+  );
+  const others = ACTIVE_MOLECULES.filter(
+    (m) => m.id !== target.id && m.topic !== target.topic,
+  );
   const picks = [...shuffle(sameTopic).slice(0, 3), ...shuffle(others)].slice(0, 3);
   return shuffle([target.id, ...picks.map((m) => m.id)]);
 }

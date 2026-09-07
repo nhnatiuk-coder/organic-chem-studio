@@ -41,7 +41,7 @@ const MODES: { value: Mode; label: string; hint: string }[] = [
 const TIERS: { value: Difficulty; label: string; hint: string }[] = [
   { value: "intro", label: "Intro", hint: "Straight chains, simple groups" },
   { value: "intermediate", label: "Intermediate", hint: "Branching, isomers, more groups" },
-  { value: "challenge", label: "Challenge", hint: "Multiple substituents, E/Z, esters" },
+  { value: "challenge", label: "Challenge", hint: "Multiple substituents and E/Z stereochemistry" },
 ];
 
 function Setup() {
