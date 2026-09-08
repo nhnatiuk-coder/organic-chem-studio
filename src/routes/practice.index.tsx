@@ -42,6 +42,11 @@ const TIERS: { value: Difficulty; label: string; hint: string }[] = [
   { value: "intro", label: "Intro", hint: "Straight chains, simple groups" },
   { value: "intermediate", label: "Intermediate", hint: "Branching, isomers, more groups" },
   { value: "challenge", label: "Challenge", hint: "Multiple substituents and E/Z stereochemistry" },
+  {
+    value: "advanced",
+    label: "Advanced",
+    hint: "Functional-group priority, unsaturation, and 3+ substituents",
+  },
 ];
 
 function Setup() {
@@ -87,7 +92,7 @@ function Setup() {
       </Group>
 
       <Group label="Difficulty">
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {TIERS.map((t) => (
             <Choice
               key={t.value}

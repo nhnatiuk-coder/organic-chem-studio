@@ -1,6 +1,6 @@
 import { attach, benzene, chain, custom, ring, type Structure } from "./structure";
 
-export type Difficulty = "intro" | "intermediate" | "challenge";
+export type Difficulty = "intro" | "intermediate" | "challenge" | "advanced";
 
 export type Topic =
   | "Alkanes"
@@ -746,6 +746,168 @@ export const MOLECULES: Molecule[] = [
     explanation:
       "Ethanamide with a methyl on nitrogen: N-methylethanamide. The N- locant shows the substituent is on nitrogen, not carbon.",
     structure: chain(["C", "N", "C", "C"], { subs: [{ at: 2, els: ["O"], order: 2, dir: -1 }] }),
+  },,
+
+  // ---------------- Advanced priority & multi-substituent naming ----------------
+  {
+    id: "4-hydroxy-3-methylpentanal",
+    smiles: "O=CCC(C)C(O)C",
+    displayName: "4-hydroxy-3-methylpentanal",
+    iupacNames: ["4-hydroxy-3-methylpentanal"],
+    commonNames: [],
+    difficulty: "advanced",
+    topic: "Aldehydes",
+    hint: "The aldehyde has higher naming priority than the alcohol, so use the -al suffix and name OH as hydroxy-.",
+    explanation:
+      "The terminal aldehyde carbon must be C1. The five-carbon parent is pentanal; the OH is a hydroxy substituent at C4 and the methyl branch is at C3.",
+    structure: chain(["C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 0, els: ["O"], order: 2, dir: -1 },
+        { at: 2, els: ["C"], dir: -1 },
+        { at: 3, els: ["O"], dir: 1 },
+      ],
+    }),
+  },
+  {
+    id: "4-bromo-3-methylpentan-2-one",
+    smiles: "CC(=O)C(C)C(Br)C",
+    displayName: "4-bromo-3-methylpentan-2-one",
+    iupacNames: ["4-bromo-3-methylpentan-2-one", "4-bromo-3-methyl-2-pentanone"],
+    commonNames: [],
+    difficulty: "advanced",
+    topic: "Ketones",
+    hint: "The ketone outranks the halogen and alkyl groups. Number from the end nearest C=O.",
+    explanation:
+      "The parent is pentan-2-one because the carbonyl receives the lowest locant. The remaining substituents are bromo at C4 and methyl at C3, alphabetized in the name.",
+    structure: chain(["C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["O"], order: 2, dir: -1 },
+        { at: 2, els: ["C"], dir: 1 },
+        { at: 3, els: ["Br"], dir: -1 },
+      ],
+    }),
+  },
+  {
+    id: "5-bromo-4-methylhex-2-enal",
+    smiles: "O=CC=CC(C)C(Br)C",
+    displayName: "5-bromo-4-methylhex-2-enal",
+    iupacNames: ["5-bromo-4-methylhex-2-enal", "5-bromo-4-methyl-2-hexenal"],
+    commonNames: [],
+    difficulty: "advanced",
+    topic: "Aldehydes",
+    hint: "Start numbering at the aldehyde carbon, then locate the alkene before naming the branches.",
+    explanation:
+      "The aldehyde controls the suffix and fixes C1. The parent is hex-2-enal, with a methyl substituent at C4 and bromo at C5.",
+    structure: chain(["C", "C", "C", "C", "C", "C"], {
+      orders: { 1: 2 },
+      subs: [
+        { at: 0, els: ["O"], order: 2, dir: -1 },
+        { at: 3, els: ["C"], dir: 1 },
+        { at: 4, els: ["Br"], dir: -1 },
+      ],
+    }),
+  },
+  {
+    id: "5-chloro-6-hydroxy-4-methylhex-2-enal",
+    smiles: "O=CC=CC(C)C(Cl)CO",
+    displayName: "5-chloro-6-hydroxy-4-methylhex-2-enal",
+    iupacNames: ["5-chloro-6-hydroxy-4-methylhex-2-enal", "5-chloro-6-hydroxy-4-methyl-2-hexenal"],
+    commonNames: [],
+    difficulty: "advanced",
+    topic: "Aldehydes",
+    hint: "An aldehyde still wins over an alcohol. List chloro, hydroxy, and methyl alphabetically after identifying the parent.",
+    explanation:
+      "A six-carbon aldehyde parent gives hex-2-enal. The OH is named hydroxy because aldehyde has priority; its substituents are 5-chloro, 6-hydroxy, and 4-methyl.",
+    structure: chain(["C", "C", "C", "C", "C", "C"], {
+      orders: { 1: 2 },
+      subs: [
+        { at: 0, els: ["O"], order: 2, dir: -1 },
+        { at: 3, els: ["C"], dir: 1 },
+        { at: 4, els: ["Cl"], dir: -1 },
+        { at: 5, els: ["O"], dir: 1 },
+      ],
+    }),
+  },
+  {
+    id: "6-hydroxy-5-methylhex-3-yn-2-one",
+    smiles: "CC(=O)C#CC(C)CO",
+    displayName: "6-hydroxy-5-methylhex-3-yn-2-one",
+    iupacNames: ["6-hydroxy-5-methylhex-3-yn-2-one", "6-hydroxy-5-methyl-3-hexyn-2-one"],
+    commonNames: [],
+    difficulty: "advanced",
+    topic: "Ketones",
+    hint: "Choose the ketone as the suffix first; then include the triple-bond locant in the parent name.",
+    explanation:
+      "Numbering from the carbonyl end gives hex-3-yn-2-one. The alcohol is a hydroxy substituent at C6, and a methyl branch is at C5.",
+    structure: chain(["C", "C", "C", "C", "C", "C"], {
+      orders: { 2: 3 },
+      subs: [
+        { at: 1, els: ["O"], order: 2, dir: -1 },
+        { at: 4, els: ["C"], dir: 1 },
+        { at: 5, els: ["O"], dir: -1 },
+      ],
+    }),
+  },
+  {
+    id: "4-hydroxy-3-3-dimethylpentanal",
+    smiles: "O=CCC(C)(C)C(O)C",
+    displayName: "4-hydroxy-3,3-dimethylpentanal",
+    iupacNames: ["4-hydroxy-3,3-dimethylpentanal"],
+    commonNames: [],
+    difficulty: "advanced",
+    topic: "Aldehydes",
+    hint: "The aldehyde selects pentanal as the parent; two identical branches on C3 require the prefix di-.",
+    explanation:
+      "The aldehyde is the highest-priority functional group. Numbering from it gives pentanal, with hydroxy at C4 and two methyl groups at C3.",
+    structure: chain(["C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 0, els: ["O"], order: 2, dir: -1 },
+        { at: 2, els: ["C"], dir: 1 },
+        { at: 2, els: ["C"], dir: -1 },
+        { at: 3, els: ["O"], dir: 1 },
+      ],
+    }),
+  },
+  {
+    id: "5-chloro-6-methylhept-3-yn-2-one",
+    smiles: "CC(=O)C#CC(Cl)C(C)C",
+    displayName: "5-chloro-6-methylhept-3-yn-2-one",
+    iupacNames: ["5-chloro-6-methylhept-3-yn-2-one", "5-chloro-6-methyl-3-heptyn-2-one"],
+    commonNames: [],
+    difficulty: "advanced",
+    topic: "Ketones",
+    hint: "Build the longest chain containing both the ketone and triple bond, then number toward the ketone.",
+    explanation:
+      "The seven-carbon parent is hept-3-yn-2-one. The ketone obtains C2, the alkyne is at C3, and the remaining substituents are 5-chloro and 6-methyl.",
+    structure: chain(["C", "C", "C", "C", "C", "C", "C"], {
+      orders: { 2: 3 },
+      subs: [
+        { at: 1, els: ["O"], order: 2, dir: -1 },
+        { at: 4, els: ["Cl"], dir: 1 },
+        { at: 5, els: ["C"], dir: -1 },
+      ],
+    }),
+  },
+  {
+    id: "4-bromo-5-hydroxy-3-methylhex-2-enal",
+    smiles: "O=CC=C(C)C(Br)C(O)C",
+    displayName: "4-bromo-5-hydroxy-3-methylhex-2-enal",
+    iupacNames: ["4-bromo-5-hydroxy-3-methylhex-2-enal", "4-bromo-5-hydroxy-3-methyl-2-hexenal"],
+    commonNames: [],
+    difficulty: "advanced",
+    topic: "Aldehydes",
+    hint: "Do not let the alcohol choose the suffix: aldehyde has priority. Once the parent is set, alphabetize bromo, hydroxy, and methyl.",
+    explanation:
+      "The aldehyde establishes a hex-2-enal parent. The substituents are bromo at C4, hydroxy at C5, and methyl at C3.",
+    structure: chain(["C", "C", "C", "C", "C", "C"], {
+      orders: { 1: 2 },
+      subs: [
+        { at: 0, els: ["O"], order: 2, dir: -1 },
+        { at: 2, els: ["C"], dir: 1 },
+        { at: 3, els: ["Br"], dir: -1 },
+        { at: 4, els: ["O"], dir: 1 },
+      ],
+    }),
   },
 ];
 
