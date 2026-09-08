@@ -52,7 +52,16 @@ export function chain(
   opts: { orders?: Partial<Record<number, 1 | 2 | 3>>; subs?: Sub[] } = {},
 ): Structure {
   const b = new Builder();
-  els.forEach((el, i) => b.add(el, i * DX, i % 2 === 0 ? 0 : -DY));
+  // An sp carbon must be linear with the atoms on either side of its triple bond.
+  // Keep the triple bond and its adjacent backbone bonds collinear at 180°.
+  const isAdjacentToTripleBond = (atomIndex: number) =>
+    [atomIndex - 2, atomIndex - 1, atomIndex, atomIndex + 1].some(
+      (bondIndex) => opts.orders?.[bondIndex] === 3,
+    );
+
+  els.forEach((el, i) =>
+    b.add(el, i * DX, isAdjacentToTripleBond(i) ? 0 : i % 2 === 0 ? 0 : -DY),
+  );
   for (let i = 0; i < els.length - 1; i++) b.bond(i, i + 1, opts.orders?.[i] ?? 1);
   (opts.subs ?? []).forEach((s) => attachChainSub(b, s));
   return b.done();
