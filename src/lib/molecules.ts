@@ -746,7 +746,7 @@ export const MOLECULES: Molecule[] = [
     explanation:
       "Ethanamide with a methyl on nitrogen: N-methylethanamide. The N- locant shows the substituent is on nitrogen, not carbon.",
     structure: chain(["C", "N", "C", "C"], { subs: [{ at: 2, els: ["O"], order: 2, dir: -1 }] }),
-  },,
+  },
 
   // ---------------- Advanced priority & multi-substituent naming ----------------
   {
