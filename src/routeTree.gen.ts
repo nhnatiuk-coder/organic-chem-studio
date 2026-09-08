@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as InstructorRouteImport } from './routes/instructor'
 import { Route as ResultsRouteImport } from './routes/results'
 import { Route as PracticeIndexRouteImport } from './routes/practice.index'
 import { Route as PracticeRunRouteImport } from './routes/practice.run'
@@ -17,6 +18,11 @@ import { Route as PracticeRunRouteImport } from './routes/practice.run'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InstructorRoute = InstructorRouteImport.update({
+  id: '/instructor',
+  path: '/instructor',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResultsRoute = ResultsRouteImport.update({
@@ -37,12 +43,14 @@ const PracticeRunRoute = PracticeRunRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/instructor': typeof InstructorRoute
   '/results': typeof ResultsRoute
   '/practice/run': typeof PracticeRunRoute
   '/practice/': typeof PracticeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/instructor': typeof InstructorRoute
   '/results': typeof ResultsRoute
   '/practice/run': typeof PracticeRunRoute
   '/practice': typeof PracticeIndexRoute
@@ -50,20 +58,28 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/instructor': typeof InstructorRoute
   '/results': typeof ResultsRoute
   '/practice/run': typeof PracticeRunRoute
   '/practice/': typeof PracticeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/results' | '/practice/run' | '/practice/'
+  fullPaths: '/' | '/instructor' | '/results' | '/practice/run' | '/practice/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/results' | '/practice/run' | '/practice'
-  id: '__root__' | '/' | '/results' | '/practice/run' | '/practice/'
+  to: '/' | '/instructor' | '/results' | '/practice/run' | '/practice'
+  id:
+    | '__root__'
+    | '/'
+    | '/instructor'
+    | '/results'
+    | '/practice/run'
+    | '/practice/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  InstructorRoute: typeof InstructorRoute
   ResultsRoute: typeof ResultsRoute
   PracticeRunRoute: typeof PracticeRunRoute
   PracticeIndexRoute: typeof PracticeIndexRoute
@@ -76,6 +92,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/instructor': {
+      id: '/instructor'
+      path: '/instructor'
+      fullPath: '/instructor'
+      preLoaderRoute: typeof InstructorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/results': {
@@ -104,6 +127,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  InstructorRoute: InstructorRoute,
   ResultsRoute: ResultsRoute,
   PracticeRunRoute: PracticeRunRoute,
   PracticeIndexRoute: PracticeIndexRoute,
