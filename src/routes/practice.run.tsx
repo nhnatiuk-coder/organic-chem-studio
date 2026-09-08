@@ -198,33 +198,8 @@ function Runner() {
           </p>
           <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
             {kind === "draw" ? (
-          <>
-            <p className="mt-5 text-sm text-muted-foreground">Draw the structure of</p>
-            <p className="font-display text-2xl font-semibold">{molecule.displayName}</p>
-            <div className="mt-6 overflow-hidden rounded-xl border border-border bg-background">
-              <iframe
-                title="Ketcher molecular editor"
-                src="https://lifescience.opensource.epam.com/ketcher/"
-                className="h-[520px] w-full border-0"
-                allow="clipboard-read; clipboard-write"
-              />
-            </div>
-            <label className="mt-5 block text-sm font-medium" htmlFor="smiles-answer">
-              Exported SMILES
-            </label>
-            <input
-              id="smiles-answer"
-              value={smiles}
-              onChange={(e) => setSmiles(e.target.value)}
-              disabled={phase === "resolved"}
-              placeholder="Paste the SMILES exported from your Ketcher drawing"
-              className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-sm outline-none focus:border-accent"
-            />
-            <p className="mt-2 text-xs text-muted-foreground">
-              Use Ketcher’s export or copy option to copy your structure as SMILES, then paste it here to check your drawing.
-            </p>
-          </>
-        ) : (
+              <PencilIcon className="size-5 text-accent" />
+            ) : (
               <TagIcon className="size-5 text-accent" />
             )}
             {kind === "draw" ? "Draw from a Name" : "Name from a Structure"}
@@ -259,54 +234,40 @@ function Runner() {
 
         {kind === "draw" ? (
           <>
-            <p className="mt-5 text-sm text-muted-foreground">Build or select the structure of</p>
+            <p className="mt-5 text-sm text-muted-foreground">Draw the structure of</p>
             <p className="font-display text-2xl font-semibold">{molecule.displayName}</p>
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              {choices.map((id) => {
-                const c = byId(id);
-                const isTarget = id === molecule.id;
-                const chosen = selected === id;
-                const reveal = phase === "resolved" && isTarget;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    disabled={phase === "resolved"}
-                    onClick={() => setSelected(id)}
-                    aria-pressed={chosen}
-                    className={`flex min-h-36 items-center justify-center rounded-xl border p-4 transition-colors ${
-                      reveal
-                        ? "border-[var(--success)] bg-secondary"
-                        : chosen
-                          ? "border-primary bg-secondary"
-                          : "border-border bg-background hover:bg-secondary/50"
-                    }`}
-                  >
-                    <StructureView
-                      structure={c.structure}
-                      title={chosen || reveal ? c.displayName : "candidate structure"}
-                      className="max-h-32 w-full"
-                    />
-                  </button>
-                );
-              })}
-            </div>
-            <details className="mt-5">
-              <summary className="cursor-pointer text-sm font-medium text-accent">
-                Prefer to type it? Enter a SMILES string
-              </summary>
-              <input
-                value={smiles}
-                onChange={(e) => setSmiles(e.target.value)}
-                disabled={phase === "resolved"}
-                placeholder="e.g. CCC(C)C"
-                className="mt-3 w-full rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-sm outline-none focus:border-accent"
+            <div className="mt-6 overflow-hidden rounded-xl border border-border bg-background">
+              <iframe
+                title="Ketcher molecular editor"
+                src="https://lifescience.opensource.epam.com/ketcher/"
+                className="h-[520px] w-full border-0"
+                allow="clipboard-read; clipboard-write"
               />
-              <p className="mt-2 text-xs text-muted-foreground">
-                A full structure editor (Ketcher) can be dropped into this panel later; typed SMILES
-                and the structure picker are the current input paths.
-              </p>
-            </details>
+            </div>
+            <label className="mt-5 block text-sm font-medium" htmlFor="smiles-answer">
+              Exported SMILES
+            </label>
+            <input
+              id="smiles-answer"
+              value={smiles}
+              onChange={(e) => setSmiles(e.target.value)}
+              disabled={phase === "resolved"}
+              placeholder="Paste the SMILES exported from your drawing"
+              className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-sm outline-none focus:border-accent"
+            />
+            <p className="mt-2 text-xs text-muted-foreground">
+              Use the editor’s copy/export option to copy your structure as SMILES, then paste it
+              here to check your drawing.
+            </p>
+            {phase === "resolved" && (
+              <div className="mt-5 flex justify-center rounded-xl border border-border bg-background p-6">
+                <StructureView
+                  structure={molecule.structure}
+                  title={molecule.displayName}
+                  className="max-h-56 w-full max-w-md"
+                />
+              </div>
+            )}
           </>
         ) : (
           <>
