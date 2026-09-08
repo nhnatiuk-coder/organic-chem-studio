@@ -107,15 +107,19 @@ function Runner() {
   };
 
   const submit = () => {
+    if (kind === "name" && !text.trim()) {
+      setMessage("Type a name before checking.");
+      return;
+    }
+    if (kind === "draw" && !smiles.trim() && !selected) {
+      setMessage("Pick the matching structure, or type its SMILES.");
+      return;
+    }
     const attemptCount = attempts + 1;
     setAttempts(attemptCount);
 
     if (kind === "name") {
       const answer = text.trim();
-      if (!answer) {
-        setMessage("Type a name before checking.");
-        return;
-      }
       const res = checkName(answer, molecule, session.settings.allowCommonNames);
       if (res.correct) {
         setMessage(
@@ -145,10 +149,6 @@ function Runner() {
     // draw
     const typed = smiles.trim();
     const answer = typed || (selected ? byId(selected).displayName : "");
-    if (!typed && !selected) {
-      setMessage("Pick the matching structure, or type its SMILES.");
-      return;
-    }
     const correct = typed ? checkSmiles(typed, molecule) : selected === molecule.id;
     if (correct) {
       setMessage("Correct — that structure matches the name.");
