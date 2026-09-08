@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Shell } from "@/components/Shell";
 import { StructureView } from "@/components/StructureView";
 import { CheckIcon, CrossIcon, LightbulbIcon, PencilIcon, TagIcon } from "@/components/Icons";
@@ -7,7 +7,6 @@ import {
   byId,
   checkName,
   checkSmiles,
-  choicesFor,
   clearActive,
   loadActive,
   loadHistory,
@@ -45,7 +44,6 @@ function Runner() {
   const [session, setSession] = useState<ActiveSession | null>(null);
   const [loaded, setLoaded] = useState(false);
 
-  const [selected, setSelected] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [smiles, setSmiles] = useState("");
   const [phase, setPhase] = useState<Phase>("answering");
@@ -61,12 +59,6 @@ function Runner() {
 
   const molecule = session ? byId(session.moleculeIds[session.index]!) : null;
   const kind = session?.kinds[session.index] ?? "name";
-
-  const choices = useMemo(
-    () => (molecule && kind === "draw" ? choicesFor(molecule) : []),
-    // regenerate per question
-    [molecule?.id, kind],
-  );
 
   if (!loaded) return <Shell><p className="text-sm text-muted-foreground">Loading…</p></Shell>;
 
@@ -111,8 +103,8 @@ function Runner() {
       setMessage("Type a name before checking.");
       return;
     }
-    if (kind === "draw" && !smiles.trim() && !selected) {
-      setMessage("Pick the matching structure, or type its SMILES.");
+    if (kind === "draw" && !smiles.trim()) {
+      setMessage("Draw the molecule in Ketcher, then paste its exported SMILES to check it.");
       return;
     }
     const attemptCount = attempts + 1;
@@ -148,8 +140,8 @@ function Runner() {
 
     // draw
     const typed = smiles.trim();
-    const answer = typed || (selected ? byId(selected).displayName : "");
-    const correct = typed ? checkSmiles(typed, molecule) : selected === molecule.id;
+    const answer = typed;
+    const correct = checkSmiles(typed, molecule);
     if (correct) {
       setMessage("Correct — that structure matches the name.");
       resolve(true, answer, attemptCount);
@@ -183,7 +175,6 @@ function Runner() {
     const updated = { ...session, index: idx };
     setSession(updated);
     saveActive(updated);
-    setSelected(null);
     setText("");
     setSmiles("");
     setAttempts(0);
@@ -207,8 +198,33 @@ function Runner() {
           </p>
           <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
             {kind === "draw" ? (
-              <PencilIcon className="size-5 text-accent" />
-            ) : (
+          <>
+            <p className="mt-5 text-sm text-muted-foreground">Draw the structure of</p>
+            <p className="font-display text-2xl font-semibold">{molecule.displayName}</p>
+            <div className="mt-6 overflow-hidden rounded-xl border border-border bg-background">
+              <iframe
+                title="Ketcher molecular editor"
+                src="https://lifescience.opensource.epam.com/ketcher/"
+                className="h-[520px] w-full border-0"
+                allow="clipboard-read; clipboard-write"
+              />
+            </div>
+            <label className="mt-5 block text-sm font-medium" htmlFor="smiles-answer">
+              Exported SMILES
+            </label>
+            <input
+              id="smiles-answer"
+              value={smiles}
+              onChange={(e) => setSmiles(e.target.value)}
+              disabled={phase === "resolved"}
+              placeholder="Paste the SMILES exported from your Ketcher drawing"
+              className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-sm outline-none focus:border-accent"
+            />
+            <p className="mt-2 text-xs text-muted-foreground">
+              Use Ketcher’s export or copy option to copy your structure as SMILES, then paste it here to check your drawing.
+            </p>
+          </>
+        ) : (
               <TagIcon className="size-5 text-accent" />
             )}
             {kind === "draw" ? "Draw from a Name" : "Name from a Structure"}
