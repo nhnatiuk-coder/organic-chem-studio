@@ -132,7 +132,7 @@ const HIDDEN_TOPICS: Topic[] = [
 
 // Aromatic atoms are lowercase in SMILES (for example, c1ccccc1).
 const ACTIVE_MOLECULES = MOLECULES.filter(
-  (m) => !HIDDEN_TOPICS.includes(m.topic) && !/[cn]/.test(m.smiles),
+  (m) => !HIDDEN_TOPICS.includes(m.topic) && !/[cn]/.test(m.smiles) && !m.iupacNames.some((name) => /^\([EZ]\)-/.test(name)),
 );
 
 function shuffle<T>(arr: T[]): T[] {
