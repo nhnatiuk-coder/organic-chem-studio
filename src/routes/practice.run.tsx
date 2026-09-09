@@ -219,6 +219,7 @@ function Runner() {
     saveActive(updated);
     setText("");
     setSmiles("");
+    void ketcherRef.current?.setMolecule("").catch(() => {});
     setAttempts(0);
     setUsedHint(false);
     setPhase("answering");
