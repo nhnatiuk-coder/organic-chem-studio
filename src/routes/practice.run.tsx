@@ -112,19 +112,30 @@ function Runner() {
     saveActive(next);
   };
 
-  const submit = () => {
+  const finishDraw = (correct: boolean, answer: string, attemptCount: number) => {
+    if (correct) {
+      setMessage("Correct — that structure matches the name.");
+      resolve(true, answer, attemptCount);
+      return;
+    }
+    setMessage("That structure does not match the name. Recount the parent chain and branches.");
+    if (attemptCount >= 2) {
+      resolve(false, answer, attemptCount);
+      setMessage(`Not matched. The correct structure for ${molecule.displayName} is shown below.`);
+    } else {
+      setPhase("retry");
+    }
+  };
+
+  const submit = async () => {
     if (kind === "name" && !text.trim()) {
       setMessage("Type a name before checking.");
       return;
     }
-    if (kind === "draw" && !smiles.trim()) {
-      setMessage("Draw the molecule in Ketcher, then paste its exported SMILES to check it.");
-      return;
-    }
-    const attemptCount = attempts + 1;
-    setAttempts(attemptCount);
 
     if (kind === "name") {
+      const attemptCount = attempts + 1;
+      setAttempts(attemptCount);
       const answer = text.trim();
       const res = checkName(answer, molecule, session.settings.allowCommonNames);
       if (res.correct) {
@@ -152,22 +163,39 @@ function Runner() {
       return;
     }
 
-    // draw
-    const typed = smiles.trim();
-    const answer = typed;
-    const correct = checkSmiles(typed, molecule);
-    if (correct) {
-      setMessage("Correct — that structure matches the name.");
-      resolve(true, answer, attemptCount);
+    // draw — grade the structure from the editor when it is running
+    const ketcher = ketcherRef.current;
+    if (ketcher) {
+      setChecking(true);
+      try {
+        const grade = await gradeDrawing(ketcher, molecule.smiles);
+        if (grade.status === "empty") {
+          setMessage("Draw the structure in the editor before checking.");
+          return;
+        }
+        if (grade.status === "unavailable") {
+          setMessage(
+            "The editor could not read your drawing. Paste its SMILES below and check again.",
+          );
+          return;
+        }
+        const attemptCount = attempts + 1;
+        setAttempts(attemptCount);
+        finishDraw(grade.correct, grade.smiles, attemptCount);
+      } finally {
+        setChecking(false);
+      }
       return;
     }
-    setMessage("That structure does not match the name. Recount the parent chain and branches.");
-    if (attemptCount >= 2) {
-      resolve(false, answer, attemptCount);
-      setMessage(`The correct structure is highlighted below (${molecule.displayName}).`);
-    } else {
-      setPhase("retry");
+
+    if (!smiles.trim()) {
+      setMessage("Draw the molecule, or paste a SMILES string, before checking.");
+      return;
     }
+    const attemptCount = attempts + 1;
+    setAttempts(attemptCount);
+    const typed = smiles.trim();
+    finishDraw(checkSmiles(typed, molecule), typed, attemptCount);
   };
 
   const next = () => {
