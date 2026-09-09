@@ -55,6 +55,16 @@ function Runner() {
   const [usedHint, setUsedHint] = useState(false);
   const [wasCorrect, setWasCorrect] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [editorReady, setEditorReady] = useState(false);
+  const [editorFailed, setEditorFailed] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const ketcherRef = useRef<Ketcher | null>(null);
+
+  const handleEditorReady = useCallback((k: Ketcher) => {
+    ketcherRef.current = k;
+    setEditorReady(true);
+  }, []);
+  const handleEditorFail = useCallback(() => setEditorFailed(true), []);
 
   useEffect(() => {
     setSession(loadActive());
