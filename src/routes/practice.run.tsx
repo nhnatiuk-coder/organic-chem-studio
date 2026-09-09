@@ -280,28 +280,46 @@ function Runner() {
             <p className="mt-5 text-sm text-muted-foreground">Draw the structure of</p>
             <p className="font-display text-2xl font-semibold">{molecule.displayName}</p>
             <div className="mt-6 overflow-hidden rounded-xl border border-border bg-background">
-              <iframe
-                title="Ketcher molecular editor"
-                src="https://lifescience.opensource.epam.com/ketcher/"
-                className="h-[520px] w-full border-0"
-                allow="clipboard-read; clipboard-write"
-              />
+              <ClientOnly
+                fallback={
+                  <div className="flex h-[520px] items-center justify-center text-sm text-muted-foreground">
+                    Loading the drawing editor…
+                  </div>
+                }
+              >
+                <Suspense
+                  fallback={
+                    <div className="flex h-[520px] items-center justify-center text-sm text-muted-foreground">
+                      Loading the drawing editor…
+                    </div>
+                  }
+                >
+                  <KetcherEditor onReady={handleEditorReady} onFail={handleEditorFail} />
+                </Suspense>
+              </ClientOnly>
             </div>
-            <label className="mt-5 block text-sm font-medium" htmlFor="smiles-answer">
-              Exported SMILES
-            </label>
-            <input
-              id="smiles-answer"
-              value={smiles}
-              onChange={(e) => setSmiles(e.target.value)}
-              disabled={phase === "resolved"}
-              placeholder="Paste the SMILES exported from your drawing"
-              className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-sm outline-none focus:border-accent"
-            />
-            <p className="mt-2 text-xs text-muted-foreground">
-              Use the editor’s copy/export option to copy your structure as SMILES, then paste it
-              here to check your drawing.
+            <p className="mt-3 text-xs text-muted-foreground">
+              {editorReady
+                ? "Draw the structure above, then press Check answer — your drawing is graded automatically."
+                : editorFailed
+                  ? "The drawing editor could not start. Paste a SMILES string below instead."
+                  : "Preparing the chemistry engine…"}
             </p>
+            {(editorFailed || !editorReady) && (
+              <>
+                <label className="mt-5 block text-sm font-medium" htmlFor="smiles-answer">
+                  SMILES (backup entry)
+                </label>
+                <input
+                  id="smiles-answer"
+                  value={smiles}
+                  onChange={(e) => setSmiles(e.target.value)}
+                  disabled={phase === "resolved"}
+                  placeholder="e.g. CC(C)O"
+                  className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-sm outline-none focus:border-accent"
+                />
+              </>
+            )}
             {phase === "resolved" && (
               <div className="mt-5 flex justify-center rounded-xl border border-border bg-background p-6">
                 <StructureView
