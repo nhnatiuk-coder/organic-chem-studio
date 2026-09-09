@@ -12,4 +12,17 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
+  vite: {
+    define: {
+      // ketcher-core is built for node and references `global`.
+      global: "globalThis",
+    },
+    resolve: {
+      // ketcher-core imports node's "events"; map it to the browser implementation.
+      alias: [{ find: /^events$/, replacement: "events/events.js" }],
+    },
+    optimizeDeps: {
+      include: ["events"],
+    },
+  },
 });

@@ -37,6 +37,8 @@ export default function KetcherEditor({ onReady, onFail }: KetcherEditorProps) {
         structServiceProvider={structServiceProvider}
         errorHandler={(message: string) => setFailed(String(message))}
         onInit={(ketcher: Ketcher) => {
+          // Exposed for debugging and for instructors scripting the editor.
+          (window as unknown as { ketcher?: Ketcher }).ketcher = ketcher;
           readyRef.current(ketcher);
         }}
       />

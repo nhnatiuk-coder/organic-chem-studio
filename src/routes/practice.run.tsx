@@ -1,8 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { ClientOnly, createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
+import type { Ketcher } from "ketcher-core";
 import { Shell } from "@/components/Shell";
 import { StructureView } from "@/components/StructureView";
 import { CheckIcon, CrossIcon, LightbulbIcon, PencilIcon, TagIcon } from "@/components/Icons";
+import { gradeDrawing } from "@/lib/grade-structure";
 import {
   byId,
   checkName,
@@ -16,6 +18,8 @@ import {
   type ActiveSession,
   type AttemptRecord,
 } from "@/lib/session";
+
+const KetcherEditor = lazy(() => import("@/components/KetcherEditor"));
 
 export const Route = createFileRoute("/practice/run")({
   head: () => ({
@@ -51,6 +55,16 @@ function Runner() {
   const [usedHint, setUsedHint] = useState(false);
   const [wasCorrect, setWasCorrect] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [editorReady, setEditorReady] = useState(false);
+  const [editorFailed, setEditorFailed] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const ketcherRef = useRef<Ketcher | null>(null);
+
+  const handleEditorReady = useCallback((k: Ketcher) => {
+    ketcherRef.current = k;
+    setEditorReady(true);
+  }, []);
+  const handleEditorFail = useCallback(() => setEditorFailed(true), []);
 
   useEffect(() => {
     setSession(loadActive());
@@ -98,19 +112,30 @@ function Runner() {
     saveActive(next);
   };
 
-  const submit = () => {
+  const finishDraw = (correct: boolean, answer: string, attemptCount: number) => {
+    if (correct) {
+      setMessage("Correct — that structure matches the name.");
+      resolve(true, answer, attemptCount);
+      return;
+    }
+    setMessage("That structure does not match the name. Recount the parent chain and branches.");
+    if (attemptCount >= 2) {
+      resolve(false, answer, attemptCount);
+      setMessage(`Not matched. The correct structure for ${molecule.displayName} is shown below.`);
+    } else {
+      setPhase("retry");
+    }
+  };
+
+  const submit = async () => {
     if (kind === "name" && !text.trim()) {
       setMessage("Type a name before checking.");
       return;
     }
-    if (kind === "draw" && !smiles.trim()) {
-      setMessage("Draw the molecule in Ketcher, then paste its exported SMILES to check it.");
-      return;
-    }
-    const attemptCount = attempts + 1;
-    setAttempts(attemptCount);
 
     if (kind === "name") {
+      const attemptCount = attempts + 1;
+      setAttempts(attemptCount);
       const answer = text.trim();
       const res = checkName(answer, molecule, session.settings.allowCommonNames);
       if (res.correct) {
@@ -138,22 +163,39 @@ function Runner() {
       return;
     }
 
-    // draw
-    const typed = smiles.trim();
-    const answer = typed;
-    const correct = checkSmiles(typed, molecule);
-    if (correct) {
-      setMessage("Correct — that structure matches the name.");
-      resolve(true, answer, attemptCount);
+    // draw — grade the structure from the editor when it is running
+    const ketcher = ketcherRef.current;
+    if (ketcher) {
+      setChecking(true);
+      try {
+        const grade = await gradeDrawing(ketcher, molecule.smiles);
+        if (grade.status === "empty") {
+          setMessage("Draw the structure in the editor before checking.");
+          return;
+        }
+        if (grade.status === "unavailable") {
+          setMessage(
+            "The editor could not read your drawing. Paste its SMILES below and check again.",
+          );
+          return;
+        }
+        const attemptCount = attempts + 1;
+        setAttempts(attemptCount);
+        finishDraw(grade.correct, grade.smiles, attemptCount);
+      } finally {
+        setChecking(false);
+      }
       return;
     }
-    setMessage("That structure does not match the name. Recount the parent chain and branches.");
-    if (attemptCount >= 2) {
-      resolve(false, answer, attemptCount);
-      setMessage(`The correct structure is highlighted below (${molecule.displayName}).`);
-    } else {
-      setPhase("retry");
+
+    if (!smiles.trim()) {
+      setMessage("Draw the molecule, or paste a SMILES string, before checking.");
+      return;
     }
+    const attemptCount = attempts + 1;
+    setAttempts(attemptCount);
+    const typed = smiles.trim();
+    finishDraw(checkSmiles(typed, molecule), typed, attemptCount);
   };
 
   const next = () => {
@@ -177,6 +219,7 @@ function Runner() {
     saveActive(updated);
     setText("");
     setSmiles("");
+    void ketcherRef.current?.setMolecule("").catch(() => {});
     setAttempts(0);
     setUsedHint(false);
     setPhase("answering");
@@ -237,28 +280,46 @@ function Runner() {
             <p className="mt-5 text-sm text-muted-foreground">Draw the structure of</p>
             <p className="font-display text-2xl font-semibold">{molecule.displayName}</p>
             <div className="mt-6 overflow-hidden rounded-xl border border-border bg-background">
-              <iframe
-                title="Ketcher molecular editor"
-                src="https://lifescience.opensource.epam.com/ketcher/"
-                className="h-[520px] w-full border-0"
-                allow="clipboard-read; clipboard-write"
-              />
+              <ClientOnly
+                fallback={
+                  <div className="flex h-[520px] items-center justify-center text-sm text-muted-foreground">
+                    Loading the drawing editor…
+                  </div>
+                }
+              >
+                <Suspense
+                  fallback={
+                    <div className="flex h-[520px] items-center justify-center text-sm text-muted-foreground">
+                      Loading the drawing editor…
+                    </div>
+                  }
+                >
+                  <KetcherEditor onReady={handleEditorReady} onFail={handleEditorFail} />
+                </Suspense>
+              </ClientOnly>
             </div>
-            <label className="mt-5 block text-sm font-medium" htmlFor="smiles-answer">
-              Exported SMILES
-            </label>
-            <input
-              id="smiles-answer"
-              value={smiles}
-              onChange={(e) => setSmiles(e.target.value)}
-              disabled={phase === "resolved"}
-              placeholder="Paste the SMILES exported from your drawing"
-              className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-sm outline-none focus:border-accent"
-            />
-            <p className="mt-2 text-xs text-muted-foreground">
-              Use the editor’s copy/export option to copy your structure as SMILES, then paste it
-              here to check your drawing.
+            <p className="mt-3 text-xs text-muted-foreground">
+              {editorReady
+                ? "Draw the structure above, then press Check answer — your drawing is graded automatically."
+                : editorFailed
+                  ? "The drawing editor could not start. Paste a SMILES string below instead."
+                  : "Preparing the chemistry engine…"}
             </p>
+            {(editorFailed || !editorReady) && (
+              <>
+                <label className="mt-5 block text-sm font-medium" htmlFor="smiles-answer">
+                  SMILES (backup entry)
+                </label>
+                <input
+                  id="smiles-answer"
+                  value={smiles}
+                  onChange={(e) => setSmiles(e.target.value)}
+                  disabled={phase === "resolved"}
+                  placeholder="e.g. CC(C)O"
+                  className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-2.5 font-mono text-sm outline-none focus:border-accent"
+                />
+              </>
+            )}
             {phase === "resolved" && (
               <div className="mt-5 flex justify-center rounded-xl border border-border bg-background p-6">
                 <StructureView
@@ -368,10 +429,15 @@ function Runner() {
           ) : (
             <button
               type="button"
-              onClick={submit}
-              className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90"
+              onClick={() => void submit()}
+              disabled={checking}
+              className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
             >
-              {phase === "retry" ? "Check again (last attempt)" : "Check answer"}
+              {checking
+                ? "Checking…"
+                : phase === "retry"
+                  ? "Check again (last attempt)"
+                  : "Check answer"}
             </button>
           )}
           <span className="text-xs text-muted-foreground">
