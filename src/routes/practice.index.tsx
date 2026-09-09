@@ -25,7 +25,7 @@ export const Route = createFileRoute("/practice/")({
       { property: "og:title", content: "Set up your practice set" },
       {
         property: "og:description",
-        content: "Pick mode, difficulty and number of questions, then start practising.",
+        content: "Pick mode, difficulty and number of questions, then start practicing.",
       },
     ],
   }),
