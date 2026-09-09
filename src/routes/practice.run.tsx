@@ -1,8 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { ClientOnly, createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
+import type { Ketcher } from "ketcher-core";
 import { Shell } from "@/components/Shell";
 import { StructureView } from "@/components/StructureView";
 import { CheckIcon, CrossIcon, LightbulbIcon, PencilIcon, TagIcon } from "@/components/Icons";
+import { gradeDrawing } from "@/lib/grade-structure";
 import {
   byId,
   checkName,
@@ -16,6 +18,8 @@ import {
   type ActiveSession,
   type AttemptRecord,
 } from "@/lib/session";
+
+const KetcherEditor = lazy(() => import("@/components/KetcherEditor"));
 
 export const Route = createFileRoute("/practice/run")({
   head: () => ({
