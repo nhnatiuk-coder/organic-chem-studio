@@ -156,7 +156,8 @@ export function pickMolecules(difficulty: Difficulty, count: number): Molecule[]
         ? ["intro", "intermediate"]
         : difficulty === "challenge"
           ? ["intermediate", "challenge"]
-          : ["challenge", "advanced"];
+          : ["challenge", "advanced"]
+          : ["advanced", "expert"];
   let pool = ACTIVE_MOLECULES.filter((m) => tiers.includes(m.difficulty));
   if (pool.length < count) pool = ACTIVE_MOLECULES;
   return shuffle(pool).slice(0, Math.min(count, pool.length));

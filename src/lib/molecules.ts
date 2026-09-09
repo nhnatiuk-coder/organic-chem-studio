@@ -1,6 +1,6 @@
 import { attach, benzene, chain, custom, ring, type Structure } from "./structure";
 
-export type Difficulty = "intro" | "intermediate" | "challenge" | "advanced";
+export type Difficulty = "intro" | "intermediate" | "challenge" | "advanced" | "expert";
 
 export type Topic =
   | "Alkanes"
