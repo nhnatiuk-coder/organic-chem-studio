@@ -429,10 +429,15 @@ function Runner() {
           ) : (
             <button
               type="button"
-              onClick={submit}
-              className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90"
+              onClick={() => void submit()}
+              disabled={checking}
+              className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
             >
-              {phase === "retry" ? "Check again (last attempt)" : "Check answer"}
+              {checking
+                ? "Checking…"
+                : phase === "retry"
+                  ? "Check again (last attempt)"
+                  : "Check answer"}
             </button>
           )}
           <span className="text-xs text-muted-foreground">
