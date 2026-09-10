@@ -33,7 +33,7 @@ export default function KetcherEditor({ onReady, onFail }: KetcherEditorProps) {
   return (
     <div className="ketcher-host h-[520px] w-full">
       <Editor
-        staticResourcesUrl=""
+        staticResourcesUrl={import.meta.env.BASE_URL}
         structServiceProvider={structServiceProvider}
         errorHandler={(message: string) => setFailed(String(message))}
         onInit={(ketcher: Ketcher) => {
