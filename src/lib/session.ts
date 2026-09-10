@@ -150,13 +150,14 @@ export function byId(id: string): Molecule {
 
 export function pickMolecules(difficulty: Difficulty, count: number): Molecule[] {
   const tiers: Difficulty[] =
-    difficulty === "intro"
-      ? ["intro"]
-      : difficulty === "intermediate"
-        ? ["intro", "intermediate"]
-        : difficulty === "challenge"
-          ? ["intermediate", "challenge"]
-          : ["challenge", "advanced"]
+  difficulty === "intro"
+    ? ["intro"]
+    : difficulty === "intermediate"
+      ? ["intro", "intermediate"]
+      : difficulty === "challenge"
+        ? ["intermediate", "challenge"]
+        : difficulty === "advanced"
+          ? ["challenge", "advanced"]
           : ["advanced", "expert"];
   let pool = ACTIVE_MOLECULES.filter((m) => tiers.includes(m.difficulty));
   if (pool.length < count) pool = ACTIVE_MOLECULES;
