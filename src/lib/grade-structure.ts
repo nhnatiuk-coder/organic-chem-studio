@@ -1,7 +1,5 @@
 import type { Ketcher } from "ketcher-core";
 
-const MOLFILE = "chemical/x-mdl-molfile";
-
 type Graph = { atoms: string[]; bonds: Array<Map<number, number>> };
 
 export type StructureGrade =
@@ -42,6 +40,67 @@ function graphFromMolfile(molfile: string): Graph | null {
   }
 
   return { atoms, bonds };
+}
+
+/**
+ * Ketcher's native KET export is produced directly from the drawing canvas.
+ * Unlike SMILES and Molfile export, it does not require the Indigo conversion
+ * worker to be available, so it is a reliable final fallback in the browser.
+ */
+function graphFromKet(ket: string): Graph | null {
+  try {
+    const document = JSON.parse(ket) as {
+      root?: { nodes?: Array<{ $ref?: string }> };
+      [key: string]: unknown;
+    };
+    const ref = document.root?.nodes?.find((node) => node.$ref?.startsWith("mol"))?.$ref;
+    const molecule = ref ? (document[ref] as { atoms?: Array<{ label?: string }>; bonds?: Array<{ atoms?: [number, number]; type?: unknown }> } | undefined) : undefined;
+    if (!molecule?.atoms?.length) return null;
+
+    const atoms = molecule.atoms.map((atom) => atom.label?.trim() || "*");
+    const bonds = Array.from({ length: atoms.length }, () => new Map<number, number>());
+    const orderOf = (type: unknown) => {
+      if (type === 2 || type === "double") return 2;
+      if (type === 3 || type === "triple") return 3;
+      if (type === 4 || type === "aromatic") return 4;
+      return 1;
+    };
+
+    for (const bond of molecule.bonds ?? []) {
+      const [a, b] = bond.atoms ?? [];
+      if (!Number.isInteger(a) || !Number.isInteger(b) || !atoms[a] || !atoms[b]) return null;
+      const order = orderOf(bond.type);
+      bonds[a]!.set(b, order);
+      bonds[b]!.set(a, order);
+    }
+    return { atoms, bonds };
+  } catch {
+    return null;
+  }
+}
+
+/** Read the live canvas model without asking Ketcher to export a file. */
+function graphFromEditor(ketcher: Ketcher): Graph | null {
+  try {
+    const struct = ketcher.editor.struct();
+    const entries = [...struct.atoms.entries()];
+    if (!entries.length) return null;
+
+    const indexOf = new Map(entries.map(([id], index) => [id, index]));
+    const atoms = entries.map(([, atom]) => atom.label || "*");
+    const bonds = Array.from({ length: atoms.length }, () => new Map<number, number>());
+
+    for (const bond of struct.bonds.values()) {
+      const begin = indexOf.get(bond.begin);
+      const end = indexOf.get(bond.end);
+      if (begin === undefined || end === undefined) return null;
+      bonds[begin]!.set(end, bond.type);
+      bonds[end]!.set(begin, bond.type);
+    }
+    return { atoms, bonds };
+  } catch {
+    return null;
+  }
 }
 
 function atomSignature(graph: Graph, index: number): string {
@@ -152,49 +211,96 @@ function sameMolecule(a: Graph, b: Graph): boolean {
   return search(0);
 }
 
-async function targetMolfile(ketcher: Ketcher, smiles: string): Promise<string | null> {
-  try {
-    const result = await ketcher.indigo.convert(smiles, { outputFormat: MOLFILE });
-    return result?.struct?.trim() || null;
-  } catch {
-    return null;
-  }
-}
+/**
+ * Parse the small-molecule SMILES used by this activity into a heavy-atom
+ * graph. This avoids asking Ketcher's worker to convert the answer-bank
+ * SMILES during grading, which can hang in a deployed browser.
+ */
+function graphFromSmiles(smiles: string): Graph | null {
+  const atoms: string[] = [];
+  const bonds: Array<Map<number, number>> = [];
+  const branches: number[] = [];
+  const rings = new Map<string, { atom: number; order: number }>();
+  let current: number | null = null;
+  let pendingBond = 1;
 
-function within<T>(promise: Promise<T>, milliseconds: number): Promise<T | null> {
-  return new Promise((resolve) => {
-    const timer = window.setTimeout(() => resolve(null), milliseconds);
-    promise.then(
-      (value) => {
-        window.clearTimeout(timer);
-        resolve(value);
-      },
-      () => {
-        window.clearTimeout(timer);
-        resolve(null);
-      },
-    );
-  });
+  const addAtom = (atom: string) => {
+    const index = atoms.length;
+    atoms.push(atom);
+    bonds.push(new Map<number, number>());
+    if (current !== null) {
+      bonds[current]!.set(index, pendingBond);
+      bonds[index]!.set(current, pendingBond);
+    }
+    current = index;
+    pendingBond = 1;
+  };
+
+  for (let i = 0; i < smiles.length; i++) {
+    const ch = smiles[i]!;
+    if (ch === "(") {
+      if (current === null) return null;
+      branches.push(current);
+    } else if (ch === ")") {
+      const parent = branches.pop();
+      if (parent === undefined) return null;
+      current = parent;
+    } else if (ch === "=") {
+      pendingBond = 2;
+    } else if (ch === "#") {
+      pendingBond = 3;
+    } else if (ch === "-" || ch === "/" || ch === "\\") {
+      pendingBond = 1;
+    } else if (ch === ".") {
+      current = null;
+      pendingBond = 1;
+    } else if (/\d/.test(ch)) {
+      if (current === null) return null;
+      const open = rings.get(ch);
+      if (open) {
+        const order = pendingBond === 1 ? open.order : pendingBond;
+        bonds[current]!.set(open.atom, order);
+        bonds[open.atom]!.set(current, order);
+        rings.delete(ch);
+      } else {
+        rings.set(ch, { atom: current, order: pendingBond });
+      }
+      pendingBond = 1;
+    } else if (ch === "[") {
+      const close = smiles.indexOf("]", i + 1);
+      if (close < 0) return null;
+      const inside = smiles.slice(i + 1, close);
+      const atom = inside.match(/^([A-Z][a-z]?|[cnops])/i)?.[1];
+      if (!atom) return null;
+      addAtom(atom);
+      i = close;
+    } else if (/[A-Z]/.test(ch)) {
+      const next = smiles[i + 1];
+      const atom = next && /[a-z]/.test(next) ? ch + next : ch;
+      addAtom(atom);
+      if (atom.length === 2) i += 1;
+    } else if (/[cnops]/.test(ch)) {
+      addAtom(ch.toUpperCase());
+    } else if (ch === "@" || ch === "+" || ch === "%") {
+      // Stereochemical and charge annotations do not alter heavy-atom
+      // connectivity. E/Z questions are currently excluded from the bank.
+    } else {
+      return null;
+    }
+  }
+
+  return atoms.length > 0 && branches.length === 0 && rings.size === 0 ? { atoms, bonds } : null;
 }
 
 export async function gradeDrawing(ketcher: Ketcher, targetSmiles: string): Promise<StructureGrade> {
-  let drawnSmiles = "";
-  let drawnMolfile = "";
+  // This is the dependable path: it reads the structure the student drew
+  // directly from Ketcher's canvas and does not require its export worker.
+  const drawnGraph = graphFromEditor(ketcher);
+  if (!drawnGraph) return { status: "empty" };
 
-  try {
-    [drawnSmiles, drawnMolfile] = await Promise.all([ketcher.getSmiles(), ketcher.getMolfile()]);
-    drawnSmiles = drawnSmiles.trim();
-  } catch {
-    return { status: "unavailable", smiles: "" };
-  }
-  if (!drawnSmiles) return { status: "empty" };
-
-  const target = await within(targetMolfile(ketcher, targetSmiles), 3_000);
-  const drawnGraph = graphFromMolfile(drawnMolfile);
-  const targetGraph = target ? graphFromMolfile(target) : null;
-
+  const targetGraph = graphFromSmiles(targetSmiles);
   if (drawnGraph && targetGraph) {
-    return { status: "graded", correct: sameMolecule(drawnGraph, targetGraph), smiles: drawnSmiles };
+    return { status: "graded", correct: sameMolecule(drawnGraph, targetGraph), smiles: "" };
   }
-  return { status: "unavailable", smiles: drawnSmiles };
+  return { status: "unavailable", smiles: "" };
 }
