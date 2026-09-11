@@ -1,5 +1,16 @@
+// @lovable.dev/vite-tanstack-config already includes the following — do NOT add them manually
+// or the app will break with duplicate plugins:
+//   - TanStack devtools (dev-only, first), tanstackStart, viteReact, tailwindcss, tsConfigPaths,
+//     nitro (build-only using cloudflare as a default target), VITE_* env injection, @ path alias,
+//     React/TanStack dedupe, error logger plugins, and sandbox detection (port/host/strictPort).
+// You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { createRequire } from "node:module";
 
+const require = createRequire(import.meta.url);
+const browserEventsPath = require.resolve("events/events.js");
+
+/** Resolve Ketcher's Node assertion import before Vite externalizes it. */
 const ketcherAssertShim = () => ({
   name: "ketcher-browser-assert-shim",
   enforce: "pre" as const,
@@ -14,6 +25,7 @@ const ketcherAssertShim = () => ({
   },
 });
 
+/** Provide Ketcher's EventEmitter dependency in the browser bundle. */
 const ketcherEventsShim = () => ({
   name: "ketcher-browser-events-shim",
   enforce: "pre" as const,
@@ -22,34 +34,32 @@ const ketcherEventsShim = () => ({
   },
   load(id: string) {
     if (id !== "\0ketcher-browser-events") return undefined;
-    return `export class EventEmitter {
-      constructor() { this._events = new Map(); }
-      on(event, listener) { const items = this._events.get(event) || []; items.push(listener); this._events.set(event, items); return this; }
-      addListener(event, listener) { return this.on(event, listener); }
-      once(event, listener) { const once = (...args) => { this.removeListener(event, once); listener(...args); }; return this.on(event, once); }
-      off(event, listener) { return this.removeListener(event, listener); }
-      removeListener(event, listener) { const items = this._events.get(event) || []; this._events.set(event, items.filter((item) => item !== listener)); return this; }
-      removeAllListeners(event) { event === undefined ? this._events.clear() : this._events.delete(event); return this; }
-      emit(event, ...args) { const items = this._events.get(event) || []; items.slice().forEach((listener) => listener(...args)); return items.length > 0; }
-      listeners(event) { return [...(this._events.get(event) || [])]; }
-      listenerCount(event) { return (this._events.get(event) || []).length; }
-    }
-    EventEmitter.listenerCount = (emitter, event) => emitter.listenerCount(event);
+    // Ketcher's worker uses EventEmitter beyond the small subset required to
+    // render the editor. Import the actual browser package by absolute path;
+    // a bare "events" import is mistaken for Node's built-in module by Vite.
+    return `import EventEmitter from ${JSON.stringify(browserEventsPath)};
+    export { EventEmitter };
     export default { EventEmitter };`;
   },
 });
 
 export default defineConfig({
   tanstackStart: {
+    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
+    // nitro/vite builds from this
     server: { entry: "server" },
   },
   vite: {
     plugins: [ketcherAssertShim(), ketcherEventsShim()],
     define: {
+      // ketcher-core is built for node and references `global`.
       global: "globalThis",
     },
     resolve: {
-      alias: [{ find: /^events$/, replacement: "events/events.js" }],
+      // ketcher-core imports node's "events"; map it to the browser implementation.
+      alias: [
+        { find: /^events$/, replacement: "events/events.js" },
+      ],
     },
     optimizeDeps: {
       include: ["events"],
