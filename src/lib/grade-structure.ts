@@ -17,7 +17,17 @@ async function inchiFromSmiles(ketcher: Ketcher, smiles: string): Promise<string
     return null;
   }
 }
-
+async function canonicalSmiles(ketcher: Ketcher, smiles: string): Promise<string | null> {
+  try {
+    const res: any = await (ketcher.indigo as any).convert(smiles, {
+      outputFormat: "chemical/x-daylight-smiles",
+    });
+    const out = typeof res === "string" ? res : res?.struct;
+    return out ? String(out).trim() : null;
+  } catch {
+    return null;
+  }
+}
 export type StructureGrade =
   | { status: "empty" }
   | { status: "graded"; correct: boolean; smiles: string }
@@ -49,25 +59,17 @@ export async function gradeDrawing(
     /* fall through to SMILES comparison */
   }
 
-  // Fallback: compare canonical SMILES produced by the same engine.
-  const targetCanonical = await (async () => {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const res: any = await (ketcher.indigo as any).convert(targetSmiles, {
-        outputFormat: "chemical/x-daylight-smiles",
-      });
-      return String(typeof res === "string" ? res : (res?.struct ?? "")).trim();
-    } catch {
-      return "";
-    }
-  })();
+// Fallback: canonicalize both structures before comparing them.
+const [drawnCanonical, targetCanonical] = await Promise.all([
+  canonicalSmiles(ketcher, drawnSmiles),
+  canonicalSmiles(ketcher, targetSmiles),
+]);
 
-  if (targetCanonical) {
-    return {
-      status: "graded",
-      correct: drawnSmiles.toUpperCase() === targetCanonical.toUpperCase(),
-      smiles: drawnSmiles,
-    };
-  }
-  return { status: "unavailable", smiles: drawnSmiles };
+if (drawnCanonical && targetCanonical) {
+  return {
+    status: "graded",
+    correct: drawnCanonical.toUpperCase() === targetCanonical.toUpperCase(),
+    smiles: drawnSmiles,
+  };
 }
+return { status: "unavailable", smiles: drawnSmiles };
