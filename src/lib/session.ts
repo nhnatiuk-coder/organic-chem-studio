@@ -203,7 +203,7 @@ export function checkName(
   molecule: Molecule,
   allowCommonNames: boolean,
 ): { correct: boolean; viaCommonName: boolean } {
-  const guess = normalizeName(input);
+  const iupac = molecule.iupacNames.flatMap(iupacAnswerForms).map(normalizeName);
   if (!guess) return { correct: false, viaCommonName: false };
   const iupac = molecule.iupacNames.map(normalizeName);
   if (iupac.includes(guess)) return { correct: true, viaCommonName: false };
@@ -211,7 +211,17 @@ export function checkName(
   if (common.includes(guess)) return { correct: allowCommonNames, viaCommonName: true };
   return { correct: false, viaCommonName: false };
 }
+function iupacAnswerForms(name: string): string[] {
+  const forms = new Set([name]);
 
+  // hex-2-enal / hept-3-yn-2-one  <=>  2-hexenal / 3-heptyn-2-one
+  forms.add(name.replace(/([a-z]+)-(\d+)-(en|yn)(?=al|one|-|$)/g, "$2-$1$3"));
+
+  // pentan-2-one and propan-2-ol  <=>  2-pentanone and 2-propanol
+  forms.add(name.replace(/([a-z]*an)-(\d+)-(one|ol)(?=$|-)/g, "$2-$1$3"));
+
+  return [...forms];
+}
 export function normalizeSmiles(s: string): string {
   return s.replace(/\s+/g, "").replace(/^\[|\]$/g, "");
 }
