@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Editor } from "ketcher-react";
-import { StandaloneStructServiceProvider } from "ketcher-standalone";
+import { StandaloneStructServiceProvider } from "ketcher-standalone/dist/binaryWasm";
 import type { Ketcher } from "ketcher-core";
 import "ketcher-react/dist/index.css";
 
