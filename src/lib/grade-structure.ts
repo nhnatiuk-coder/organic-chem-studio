@@ -6,11 +6,15 @@ function trimInchi(s: string): string {
   return s.split("\n")[0]!.trim();
 }
 
-async function inchiFromSmiles(ketcher: Ketcher, smiles: string): Promise<string | null> {
+async function inchiFromSmiles(
+  ketcher: Ketcher,
+  smiles: string,
+): Promise<string | null> {
   try {
     const res: any = await (ketcher.indigo as any).convert(smiles, {
       outputFormat: INCHI,
     });
+
     const out = typeof res === "string" ? res : res?.struct;
     return out ? trimInchi(String(out)) : null;
   } catch {
@@ -18,11 +22,15 @@ async function inchiFromSmiles(ketcher: Ketcher, smiles: string): Promise<string
   }
 }
 
-async function canonicalSmiles(ketcher: Ketcher, smiles: string): Promise<string | null> {
+async function canonicalSmiles(
+  ketcher: Ketcher,
+  smiles: string,
+): Promise<string | null> {
   try {
     const res: any = await (ketcher.indigo as any).convert(smiles, {
       outputFormat: "chemical/x-daylight-smiles",
     });
+
     const out = typeof res === "string" ? res : res?.struct;
     return out ? String(out).trim() : null;
   } catch {
@@ -47,7 +55,9 @@ export async function gradeDrawing(
     return { status: "unavailable", smiles: "" };
   }
 
-  if (!drawnSmiles) return { status: "empty" };
+  if (!drawnSmiles) {
+    return { status: "empty" };
+  }
 
   try {
     const drawnInchi = trimInchi(await ketcher.getInchi());
