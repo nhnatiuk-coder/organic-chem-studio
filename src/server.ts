@@ -7,6 +7,8 @@ type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
 };
 
+type Environment = { INSTRUCTOR_PASSWORD?: unknown };
+
 let serverEntryPromise: Promise<ServerEntry> | undefined;
 
 async function getServerEntry(): Promise<ServerEntry> {
@@ -44,9 +46,54 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+/**
+ * Protect the instructor-only question-bank review before the React app is
+ * served. The password lives in Cloudflare as INSTRUCTOR_PASSWORD, never in
+ * the client bundle or Git repository.
+ */
+function instructorAuthorized(request: Request, env: unknown): boolean {
+  const expected = (env as Environment).INSTRUCTOR_PASSWORD;
+  if (typeof expected !== "string" || !expected) return false;
+
+  const authorization = request.headers.get("authorization");
+  if (!authorization?.startsWith("Basic ")) return false;
+
+  try {
+    const credentials = atob(authorization.slice(6));
+    const separator = credentials.indexOf(":");
+    return separator >= 0 && credentials.slice(separator + 1) === expected;
+  } catch {
+    return false;
+  }
+}
+
+function instructorPasswordRequired(request: Request, env: unknown): Response | null {
+  const { pathname } = new URL(request.url);
+  if (pathname !== "/instructor" && pathname !== "/instructor/") return null;
+
+  if (instructorAuthorized(request, env)) return null;
+  const passwordConfigured = typeof (env as Environment).INSTRUCTOR_PASSWORD === "string";
+  return new Response(
+    passwordConfigured
+      ? "Instructor password required."
+      : "Instructor access is not configured yet. Add the INSTRUCTOR_PASSWORD secret in Cloudflare.",
+    {
+      status: passwordConfigured ? 401 : 503,
+      headers: {
+        "content-type": "text/plain; charset=utf-8",
+        ...(passwordConfigured
+          ? { "www-authenticate": 'Basic realm="Instructor Review", charset="UTF-8"' }
+          : {}),
+      },
+    },
+  );
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const accessResponse = instructorPasswordRequired(request, env);
+      if (accessResponse) return accessResponse;
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);
