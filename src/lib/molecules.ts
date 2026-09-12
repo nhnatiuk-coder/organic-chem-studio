@@ -628,13 +628,8 @@ export const MOLECULES: Molecule[] = [
     hint: "One carbon, three identical halogens — use a multiplying prefix.",
     explanation:
       "Methane with three chlorines: trichloromethane, historically used as chloroform.",
-    structure: attach(
-      chain(["Cl", "C", "Cl"], { subs: [{ at: 1, els: ["Cl"], dir: 1 }] }),
-      1,
-      "Cl",
-      0,
-      -0.87,
-    ),
+    // CHCl3: the central carbon has three Cl atoms and one implicit H.
+    structure: chain(["Cl", "C", "Cl"], { subs: [{ at: 1, els: ["Cl"], dir: 1 }] }),
   },
   // ---------------- Benzene derivatives & phenols ----------------
   {
