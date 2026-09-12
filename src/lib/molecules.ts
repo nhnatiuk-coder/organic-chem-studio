@@ -183,16 +183,16 @@ export const MOLECULES: Molecule[] = [
     structure: chain(["C", "C", "C"], { orders: { 1: 2 } }),
   },
   {
-    id: "e-but-2-ene",
+    id: "trans-but-2-ene",
     smiles: "C/C=C/C",
-    displayName: "(E)-but-2-ene",
-    iupacNames: ["(E)-but-2-ene", "trans-but-2-ene", "(E)-2-butene", "trans-2-butene"],
+    displayName: "trans-but-2-ene",
+    iupacNames: ["trans-but-2-ene", "trans-2-butene"],
     commonNames: [],
     difficulty: "challenge",
     topic: "Alkenes",
-    hint: "The two methyl groups sit on opposite sides of the C=C — that is the E (trans) arrangement.",
+    hint: "The two methyl groups sit on opposite sides of the C=C — that is the trans arrangement.",
     explanation:
-      "Four carbons, double bond between C2 and C3. Higher-priority groups (the methyls) are on opposite sides, so the descriptor is E (entgegen), often written trans.",
+      "Four carbons with a double bond between C2 and C3. The two methyl groups are on opposite sides of the double bond, so this is the trans isomer.",
     structure: custom(
       [
         ["C", 0, 0],
@@ -208,16 +208,16 @@ export const MOLECULES: Molecule[] = [
     ),
   },
   {
-    id: "z-but-2-ene",
+    id: "cis-but-2-ene",
     smiles: "C/C=C\\C",
-    displayName: "(Z)-but-2-ene",
-    iupacNames: ["(Z)-but-2-ene", "cis-but-2-ene", "(Z)-2-butene", "cis-2-butene"],
+    displayName: "cis-but-2-ene",
+    iupacNames: ["cis-but-2-ene", "cis-2-butene"],
     commonNames: [],
     difficulty: "challenge",
     topic: "Alkenes",
     hint: "Both methyl groups point to the same side of the double bond.",
     explanation:
-      "Same skeleton as the E isomer, but the methyls are on the same side of the C=C, giving Z (zusammen), commonly labelled cis.",
+      "Same carbon skeleton as trans-but-2-ene, but the methyl groups are on the same side of the double bond, so this is the cis isomer.",
     structure: custom(
       [
         ["C", 0, 0.5],
