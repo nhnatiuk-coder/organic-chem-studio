@@ -7,24 +7,7 @@ function label(s: Structure, i: number): string | null {
   const used = bonds.reduce((n, b) => n + b.order, 0);
   const valence: Record<string, number> = { O: 2, N: 3, S: 2, Cl: 1, Br: 1, F: 1, I: 1 };
   const h = Math.max(0, (valence[a.el] ?? 0) - used);
-  // Draw hydroxyl hydrogen separately so a C–O–H group cannot be mistaken
-  // for a bond from carbon directly to hydrogen.
-  if (a.el === "O" && h === 1) return "O";
   return h === 0 ? a.el : h === 1 ? `${a.el}H` : `${a.el}H${h}`;
-}
-
-function hydroxylHydrogen(structure: Structure, index: number): { x: number; y: number } | null {
-  const atom = structure.atoms[index]!;
-  if (atom.el !== "O") return null;
-
-  const bonds = structure.bonds.filter((bond) => bond.a === index || bond.b === index);
-  if (bonds.length !== 1 || bonds[0]!.order !== 1) return null;
-
-  const neighbor = structure.atoms[bonds[0]!.a === index ? bonds[0]!.b : bonds[0]!.a]!;
-  const dx = atom.x - neighbor.x;
-  const dy = atom.y - neighbor.y;
-  const length = Math.hypot(dx, dy) || 1;
-  return { x: atom.x + dx / length, y: atom.y + dy / length };
 }
 
 export function StructureView({
@@ -91,34 +74,6 @@ export function StructureView({
       {structure.atoms.map((a, i) =>
         labels[i] ? (
           <g key={i}>
-            {(() => {
-              const hydrogen = hydroxylHydrogen(structure, i);
-              return hydrogen ? (
-                <>
-                  <line
-                    x1={px(a.x)}
-                    y1={py(a.y)}
-                    x2={px(hydrogen.x)}
-                    y2={py(hydrogen.y)}
-                    stroke="var(--structure-ink)"
-                    strokeWidth={2.1}
-                    strokeLinecap="round"
-                  />
-                  <text
-                    x={px(hydrogen.x)}
-                    y={py(hydrogen.y)}
-                    textAnchor="middle"
-                    dominantBaseline="central"
-                    fontSize={15}
-                    fontWeight={600}
-                    fill="var(--structure-ink)"
-                    fontFamily="ui-sans-serif, system-ui, sans-serif"
-                  >
-                    H
-                  </text>
-                </>
-              ) : null;
-            })()}
             <circle cx={px(a.x)} cy={py(a.y)} r={13} fill="var(--structure-bg)" />
             <text
               x={px(a.x)}
