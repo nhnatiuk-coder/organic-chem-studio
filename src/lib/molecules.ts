@@ -8,6 +8,7 @@ export type Topic =
   | "Cycloalkanes"
   | "Alkenes"
   | "Alkynes"
+  | "Nitriles"
   | "Alcohols"
   | "Thiols"
   | "Ethers"
@@ -924,6 +925,8 @@ function extra(
     Cycloalkanes: "A closed, saturated carbon ring uses the cyclo- prefix.",
     Alkenes: "Include the double bond in the parent chain and give it the lowest possible locant.",
     Alkynes: "Include the triple bond in the parent chain and give it the lowest possible locant.",
+    Nitriles:
+      "Include the nitrile carbon in the parent chain; it is carbon 1 and uses the suffix -nitrile.",
     Alcohols:
       "Choose the longest chain containing OH and number from the end nearest the OH group.",
     Thiols:
@@ -2030,6 +2033,49 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
       0.615,
       0.615,
     ),
+  ),
+
+  // ---------------- Nitrile naming practice ----------------
+  extra(
+    "extra-propanenitrile",
+    "CCC#N",
+    "propanenitrile",
+    "intro",
+    "Nitriles",
+    chain(["C", "C", "C", "N"], { orders: { 2: 3 } }),
+  ),
+  extra(
+    "extra-3-methylbutanenitrile",
+    "N#CCC(C)C",
+    "3-methylbutanenitrile",
+    "intermediate",
+    "Nitriles",
+    chain(["N", "C", "C", "C", "C"], { orders: { 0: 3 }, subs: [{ at: 3, els: ["C"], dir: -1 }] }),
+  ),
+  extra(
+    "extra-4-chloropentanenitrile",
+    "N#CCCC(Cl)C",
+    "4-chloropentanenitrile",
+    "challenge",
+    "Nitriles",
+    chain(["N", "C", "C", "C", "C", "C"], {
+      orders: { 0: 3 },
+      subs: [{ at: 4, els: ["Cl"], dir: -1 }],
+    }),
+  ),
+  extra(
+    "extra-3-hydroxy-4-methylpentanenitrile",
+    "N#CCC(O)C(C)C",
+    "3-hydroxy-4-methylpentanenitrile",
+    "advanced",
+    "Nitriles",
+    chain(["N", "C", "C", "C", "C", "C"], {
+      orders: { 0: 3 },
+      subs: [
+        { at: 3, els: ["O"], dir: -1 },
+        { at: 4, els: ["C"], dir: 1 },
+      ],
+    }),
   ),
 ];
 
