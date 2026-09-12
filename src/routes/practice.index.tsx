@@ -113,7 +113,7 @@ function Setup() {
 
       <Group label="Number of questions">
         <div className="flex flex-wrap gap-3">
-          {[5, 10, 15, 20].map((n) => (
+          {[5, 10, 25, 50].map((n) => (
             <button
               key={n}
               type="button"
