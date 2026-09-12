@@ -6,8 +6,7 @@ export type Atom = { el: string; x: number; y: number };
 export type Bond = { a: number; b: number; order: 1 | 2 | 3 };
 export type Structure = { atoms: Atom[]; bonds: Bond[] };
 
-const DX = 0.87;
-const DY = 0.5;
+const BOND = 1;
 
 class Builder {
   atoms: Atom[] = [];
@@ -37,74 +36,87 @@ function attachChainSub(b: Builder, sub: Sub) {
   const base = b.atoms[sub.at]!;
   const dir = sub.dir ?? -1;
   let prev = sub.at;
+  let ux = 0;
+  let uy = dir;
+
+  const neighbors = () =>
+    b.bonds
+      .filter((bond) => bond.a === prev || bond.b === prev)
+      .map((bond) => b.atoms[bond.a === prev ? bond.b : bond.a]!)
+      .map((atom) => {
+        const dx = atom.x - b.atoms[prev]!.x;
+        const dy = atom.y - b.atoms[prev]!.y;
+        const length = Math.hypot(dx, dy) || 1;
+        return { x: dx / length, y: dy / length };
+      });
 
   sub.els.forEach((el, i) => {
-    let x = base.x + i * DX;
-    let y = base.y + dir * (0.87 + (i % 2 === 0 ? 0 : -DY) + (i > 0 ? DY : 0));
-
-    // Carbonyl carbons are trigonal planar. Place the first double-bonded
-    // atom so the visible bonds meet at approximately 120 degrees.
-    if (i === 0 && (sub.order ?? 1) === 2 && base.el === "C") {
-      const neighbors = b.bonds
-        .filter((bond) => bond.a === sub.at || bond.b === sub.at)
-        .map((bond) => b.atoms[bond.a === sub.at ? bond.b : bond.a]!)
-        .map((atom) => {
-          const dx = atom.x - base.x;
-          const dy = atom.y - base.y;
-          const length = Math.hypot(dx, dy) || 1;
-          return { x: dx / length, y: dy / length };
-        });
-
-      let ux: number;
-      let uy: number;
-
-      if (neighbors.length >= 2) {
-        const sx = neighbors.reduce((sum, vector) => sum + vector.x, 0);
-        const sy = neighbors.reduce((sum, vector) => sum + vector.y, 0);
-        const length = Math.hypot(sx, sy) || 1;
-        ux = -sx / length;
-        uy = -sy / length;
-      } else if (neighbors.length === 1) {
+    if (i === 0) {
+      const connected = neighbors();
+      if (connected.length >= 2) {
+        // The third direction in a trigonal-planar drawing is opposite the
+        // bisector of the first two. This gives 120° at C=C and C=O centers.
+        const sx = connected.reduce((sum, vector) => sum + vector.x, 0);
+        const sy = connected.reduce((sum, vector) => sum + vector.y, 0);
+        const length = Math.hypot(sx, sy);
+        if (length > 0.001) {
+          ux = -sx / length;
+          uy = -sy / length;
+        }
+      } else if (connected.length === 1) {
+        // A terminal carbonyl has one visible neighbour and one implicit H.
+        // Rotate its O direction by 120°, choosing the requested side.
         const angle = (-dir * 2 * Math.PI) / 3;
-        const vector = neighbors[0]!;
+        const vector = connected[0]!;
         ux = vector.x * Math.cos(angle) - vector.y * Math.sin(angle);
         uy = vector.x * Math.sin(angle) + vector.y * Math.cos(angle);
-      } else {
-        ux = 0;
-        uy = dir;
       }
-
-      x = base.x + ux * DX;
-      y = base.y + uy * DX;
+    } else {
+      // Continue a substituent as a conventional zigzag chain.
+      const angle = (dir * Math.PI) / 3;
+      const nextX = ux * Math.cos(angle) - uy * Math.sin(angle);
+      const nextY = ux * Math.sin(angle) + uy * Math.cos(angle);
+      ux = nextX;
+      uy = nextY;
     }
 
-    const idx = b.add(el, x, y);
+    const start = b.atoms[prev]!;
+    const idx = b.add(el, start.x + ux * BOND, start.y + uy * BOND);
     b.bond(prev, idx, i === 0 ? (sub.order ?? 1) : (sub.orders?.[i - 1] ?? 1));
     prev = idx;
   });
 }
+
 /** Zigzag straight chain. `orders` maps chain-bond index (i between atom i and i+1) to order. */
 export function chain(
   els: string[],
   opts: { orders?: Partial<Record<number, 1 | 2 | 3>>; subs?: Sub[] } = {},
 ): Structure {
   const b = new Builder();
+  if (!els.length) return b.done();
 
-  // An sp carbon must be linear with the atoms on either side of its triple bond.
-  // Keep the triple bond and its adjacent backbone bonds collinear at 180°.
-  const isAdjacentToTripleBond = (atomIndex: number) =>
-    [atomIndex - 2, atomIndex - 1, atomIndex, atomIndex + 1].some(
-      (bondIndex) => opts.orders?.[bondIndex] === 3,
-    );
-
-  els.forEach((el, i) =>
-    b.add(el, i * DX, isAdjacentToTripleBond(i) ? 0 : i % 2 === 0 ? 0 : -DY),
-  );
-
-  for (let i = 0; i < els.length - 1; i++) {
-    b.bond(i, i + 1, opts.orders?.[i] ?? 1);
+  // Each bond has a direction. At a C#C carbon the incoming and outgoing
+  // bonds are collinear (180°); everywhere else the backbone turns by 60°,
+  // producing the conventional 120° planar projection.
+  const directions: number[] = [0];
+  let turn = -1;
+  for (let atom = 1; atom < els.length - 1; atom++) {
+    const isSp = opts.orders?.[atom - 1] === 3 || opts.orders?.[atom] === 3;
+    if (isSp) {
+      directions[atom] = directions[atom - 1]!;
+    } else {
+      directions[atom] = directions[atom - 1]! + turn * (Math.PI / 3);
+      turn *= -1;
+    }
   }
 
+  b.add(els[0]!, 0, 0);
+  for (let i = 1; i < els.length; i++) {
+    const prior = b.atoms[i - 1]!;
+    const angle = directions[i - 1] ?? 0;
+    b.add(els[i]!, prior.x + BOND * Math.cos(angle), prior.y + BOND * Math.sin(angle));
+  }
+  for (let i = 0; i < els.length - 1; i++) b.bond(i, i + 1, opts.orders?.[i] ?? 1);
   (opts.subs ?? []).forEach((s) => attachChainSub(b, s));
   return b.done();
 }
@@ -120,9 +132,8 @@ export function ring(
   } = {},
 ): Structure {
   const b = new Builder();
-  const r = DX / (2 * Math.sin(Math.PI / n));
+  const r = BOND / (2 * Math.sin(Math.PI / n));
   const pts: { x: number; y: number }[] = [];
-
   for (let i = 0; i < n; i++) {
     const ang = -Math.PI / 2 + (2 * Math.PI * i) / n;
     const x = r * Math.cos(ang);
@@ -130,14 +141,10 @@ export function ring(
     pts.push({ x, y });
     b.add(opts.els?.[i] ?? "C", x, y);
   }
-
   for (let i = 0; i < n; i++) {
-    const order = opts.aromatic
-      ? ((i % 2 === 0 ? 2 : 1) as 1 | 2)
-      : (opts.orders?.[i] ?? 1);
+    const order = opts.aromatic ? ((i % 2 === 0 ? 2 : 1) as 1 | 2) : (opts.orders?.[i] ?? 1);
     b.bond(i, (i + 1) % n, order);
   }
-
   (opts.subs ?? []).forEach((s) => {
     const base = pts[s.at]!;
     const len = Math.hypot(base.x, base.y) || 1;
@@ -146,7 +153,6 @@ export function ring(
     let px = base.x;
     let py = base.y;
     let prev = s.at;
-
     s.els.forEach((el, i) => {
       if (i > 0) {
         const rot = (i % 2 === 0 ? -1 : 1) * (Math.PI / 6);
@@ -155,15 +161,13 @@ export function ring(
         ux = nx;
         uy = ny;
       }
-
-      px += ux * DX;
-      py += uy * DX;
+      px += ux * 0.87;
+      py += uy * 0.87;
       const idx = b.add(el, px, py);
       b.bond(prev, idx, i === 0 ? (s.order ?? 1) : (s.orders?.[i - 1] ?? 1));
       prev = idx;
     });
   });
-
   return b.done();
 }
 
@@ -182,7 +186,7 @@ export function custom(
   return b.done();
 }
 
-/** Hang one extra atom off an existing atom. */
+/** Hang one extra atom off an existing atom (used for branched substituents). */
 export function attach(
   s: Structure,
   from: number,
