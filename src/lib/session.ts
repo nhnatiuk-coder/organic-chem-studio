@@ -2,10 +2,11 @@ import { MOLECULES, type Difficulty, type Molecule, type Topic } from "./molecul
 
 export type Mode = "mixed" | "draw" | "name";
 export type QuestionKind = "draw" | "name";
+export type PracticeDifficulty = Difficulty | "progressive";
 
 export type Settings = {
   mode: Mode;
-  difficulty: Difficulty;
+  difficulty: PracticeDifficulty;
   count: number;
   allowCommonNames: boolean;
   showHints: boolean;
@@ -162,7 +163,25 @@ export function byId(id: string): Molecule {
   return MOLECULES.find((m) => m.id === id) ?? MOLECULES[0]!;
 }
 
-export function pickMolecules(difficulty: Difficulty, count: number): Molecule[] {
+function pickProgressiveMolecules(count: number): Molecule[] {
+  const levels: Difficulty[] = ["intro", "intermediate", "challenge", "advanced"];
+  const base = Math.floor(count / levels.length);
+  const remainder = count % levels.length;
+
+  return levels
+    .flatMap((level, index) => {
+      const wanted = base + (index < remainder ? 1 : 0);
+      return shuffle(ACTIVE_MOLECULES.filter((molecule) => molecule.difficulty === level)).slice(
+        0,
+        wanted,
+      );
+    })
+    .sort((left, right) => DIFFICULTY_RANK[left.difficulty] - DIFFICULTY_RANK[right.difficulty]);
+}
+
+export function pickMolecules(difficulty: PracticeDifficulty, count: number): Molecule[] {
+  if (difficulty === "progressive") return pickProgressiveMolecules(count);
+
   const tiers: Difficulty[] =
     difficulty === "intro"
       ? ["intro"]

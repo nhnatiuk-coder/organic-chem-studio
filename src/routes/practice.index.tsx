@@ -1,7 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Shell } from "@/components/Shell";
-import type { Difficulty } from "@/lib/molecules";
 import {
   DEFAULT_SETTINGS,
   kindsFor,
@@ -10,6 +9,7 @@ import {
   saveActive,
   saveSettings,
   type Mode,
+  type PracticeDifficulty,
   type Settings,
 } from "@/lib/session";
 
@@ -38,7 +38,12 @@ const MODES: { value: Mode; label: string; hint: string }[] = [
   { value: "name", label: "Name from a Structure", hint: "Structure given, type the name" },
 ];
 
-const TIERS: { value: Difficulty; label: string; hint: string }[] = [
+const TIERS: { value: PracticeDifficulty; label: string; hint: string }[] = [
+  {
+    value: "progressive",
+    label: "Progressive",
+    hint: "Starts easy, then works through increasingly difficult questions",
+  },
   { value: "intro", label: "Intro", hint: "Straight chains, simple groups" },
   { value: "intermediate", label: "Intermediate", hint: "Branching, isomers, more groups" },
   { value: "challenge", label: "Challenge", hint: "Multiple substituents and E/Z stereochemistry" },
