@@ -14,8 +14,8 @@ export type Settings = {
 
 export const DEFAULT_SETTINGS: Settings = {
   mode: "mixed",
-  difficulty: "intro",
-  count: 10,
+  difficulty: "progressive",
+  count: 50,
   allowCommonNames: true,
   showHints: true,
 };
