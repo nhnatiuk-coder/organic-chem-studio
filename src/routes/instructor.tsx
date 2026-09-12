@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Shell } from "@/components/Shell";
 import { BookIcon, HexIcon } from "@/components/Icons";
@@ -7,6 +7,12 @@ import { MOLECULES, type Difficulty } from "@/lib/molecules";
 import { loadSettings, saveSettings, type Settings } from "@/lib/session";
 
 export const Route = createFileRoute("/instructor")({
+  // This second guard matters for in-app navigation: the server returns 404
+  // for direct requests, while this prevents the client router from rendering
+  // the bundled review screen for students already using the app.
+  beforeLoad: () => {
+    throw redirect({ to: "/" });
+  },
   head: () => ({
     meta: [
       { title: "Instructor guide — Organic Nomenclature Studio" },
