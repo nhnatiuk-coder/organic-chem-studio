@@ -1838,6 +1838,135 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
       ],
     }),
   ),
+
+  // ---------------- Additional cycloalkane naming practice ----------------
+  extra("extra-cyclobutane", "C1CCC1", "cyclobutane", "intro", "Cycloalkanes", ring(4)),
+  extra("extra-cycloheptane", "C1CCCCCC1", "cycloheptane", "intro", "Cycloalkanes", ring(7)),
+  extra(
+    "extra-ethylcyclopropane",
+    "CCC1CC1",
+    "ethylcyclopropane",
+    "intro",
+    "Cycloalkanes",
+    ring(3, { subs: [{ at: 0, els: ["C", "C"] }] }),
+  ),
+  extra(
+    "extra-ethylcyclobutane",
+    "CCC1CCC1",
+    "ethylcyclobutane",
+    "intermediate",
+    "Cycloalkanes",
+    ring(4, { subs: [{ at: 0, els: ["C", "C"] }] }),
+  ),
+  extra(
+    "extra-11-dimethylcyclobutane",
+    "CC1(CCC1)C",
+    "1,1-dimethylcyclobutane",
+    "intermediate",
+    "Cycloalkanes",
+    attach(ring(4, { subs: [{ at: 0, els: ["C"] }] }), 0, "C", -0.5, -0.8),
+  ),
+  extra(
+    "extra-1-ethyl-2-methylcyclopentane",
+    "CCC1CCCC1C",
+    "1-ethyl-2-methylcyclopentane",
+    "intermediate",
+    "Cycloalkanes",
+    ring(5, {
+      subs: [
+        { at: 0, els: ["C", "C"] },
+        { at: 1, els: ["C"] },
+      ],
+    }),
+  ),
+  extra(
+    "extra-1-ethyl-3-methylcyclohexane",
+    "CCC1CC(C)CCC1",
+    "1-ethyl-3-methylcyclohexane",
+    "challenge",
+    "Cycloalkanes",
+    ring(6, {
+      subs: [
+        { at: 0, els: ["C", "C"] },
+        { at: 2, els: ["C"] },
+      ],
+    }),
+  ),
+  extra(
+    "extra-124-trimethylcyclohexane",
+    "CC1C(C)CC(C)CC1",
+    "1,2,4-trimethylcyclohexane",
+    "challenge",
+    "Cycloalkanes",
+    ring(6, {
+      subs: [
+        { at: 0, els: ["C"] },
+        { at: 1, els: ["C"] },
+        { at: 3, els: ["C"] },
+      ],
+    }),
+  ),
+  extra(
+    "extra-1-bromo-2-methylcyclopentane",
+    "BrC1C(C)CCC1",
+    "1-bromo-2-methylcyclopentane",
+    "challenge",
+    "Cycloalkanes",
+    ring(5, {
+      subs: [
+        { at: 0, els: ["Br"] },
+        { at: 1, els: ["C"] },
+      ],
+    }),
+  ),
+  extra(
+    "extra-1-bromo-4-ethyl-2-methylcyclohexane",
+    "BrC1C(C)C(CC)CCC1",
+    "1-bromo-4-ethyl-2-methylcyclohexane",
+    "advanced",
+    "Cycloalkanes",
+    ring(6, {
+      subs: [
+        { at: 0, els: ["Br"] },
+        { at: 1, els: ["C"] },
+        { at: 3, els: ["C", "C"] },
+      ],
+    }),
+  ),
+  extra(
+    "extra-1-chloro-2-ethyl-4-methylcyclohexane",
+    "ClC1C(CC)CC(C)CC1",
+    "1-chloro-2-ethyl-4-methylcyclohexane",
+    "advanced",
+    "Cycloalkanes",
+    ring(6, {
+      subs: [
+        { at: 0, els: ["Cl"] },
+        { at: 1, els: ["C", "C"] },
+        { at: 3, els: ["C"] },
+      ],
+    }),
+  ),
+  extra(
+    "extra-1-bromo-4-ethyl-22-dimethylcyclohexane",
+    "BrC1C(C)(C)CC(CC)CC1",
+    "1-bromo-4-ethyl-2,2-dimethylcyclohexane",
+    "advanced",
+    "Cycloalkanes",
+    attach(
+      ring(6, {
+        subs: [
+          { at: 0, els: ["Br"] },
+          { at: 1, els: ["C"] },
+          { at: 3, els: ["C", "C"] },
+        ],
+      }),
+      1,
+      "C",
+      -0.5,
+      -0.5,
+    ),
+  ),
 ];
 
 export const MOLECULES: Molecule[] = [...CORE_MOLECULES, ...ADDITIONAL_MOLECULES];
