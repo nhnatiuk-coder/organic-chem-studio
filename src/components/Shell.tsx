@@ -12,7 +12,9 @@ export function Shell({ children }: { children: ReactNode }) {
               <FlaskIcon className="size-5" />
             </span>
             <span className="leading-tight">
-              <span className="block font-semibold tracking-tight">Organic Nomenclature Studio</span>
+              <span className="block font-semibold tracking-tight">
+                Organic Nomenclature Studio
+              </span>
               <span className="block text-xs text-muted-foreground">
                 Naming and structure practice
               </span>
@@ -21,14 +23,13 @@ export function Shell({ children }: { children: ReactNode }) {
           <nav className="flex items-center gap-1 text-sm">
             <NavLink to="/practice">Practice</NavLink>
             <NavLink to="/results">Results</NavLink>
-            <NavLink to="/instructor">Instructors</NavLink>
           </nav>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-5 py-10">{children}</main>
       <footer className="border-t border-border/70 py-6 text-center text-xs text-muted-foreground">
-        Standalone practice activity — embed- and launch-ready. Grade passback would require a
-        later LTI integration.
+        Standalone practice activity — embed- and launch-ready. Grade passback would require a later
+        LTI integration.
       </footer>
     </div>
   );
