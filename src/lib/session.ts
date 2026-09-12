@@ -130,9 +130,15 @@ const HIDDEN_TOPICS: Topic[] = [
   "Amines",
 ];
 
+/** Simple primary amines are in scope; advanced/aromatic amines remain hidden for now. */
+const ACTIVE_AMINE_IDS = new Set(["ethanamine", "propan-2-amine"]);
+
 // Aromatic atoms are lowercase in SMILES (for example, c1ccccc1).
 const ACTIVE_MOLECULES = MOLECULES.filter(
-  (m) => !HIDDEN_TOPICS.includes(m.topic) && !/[cn]/.test(m.smiles) && !m.iupacNames.some((name) => /^\([EZ]\)-/.test(name)),
+  (m) =>
+    (!HIDDEN_TOPICS.includes(m.topic) || ACTIVE_AMINE_IDS.has(m.id)) &&
+    !/[cn]/.test(m.smiles) &&
+    !m.iupacNames.some((name) => /^\([EZ]\)-/.test(name)),
 );
 
 function shuffle<T>(arr: T[]): T[] {
@@ -187,12 +193,8 @@ export function kindsFor(mode: Mode, count: number): QuestionKind[] {
 
 /** Distractor structures for a "draw from a name" question. */
 export function choicesFor(target: Molecule): string[] {
-  const sameTopic = ACTIVE_MOLECULES.filter(
-    (m) => m.id !== target.id && m.topic === target.topic,
-  );
-  const others = ACTIVE_MOLECULES.filter(
-    (m) => m.id !== target.id && m.topic !== target.topic,
-  );
+  const sameTopic = ACTIVE_MOLECULES.filter((m) => m.id !== target.id && m.topic === target.topic);
+  const others = ACTIVE_MOLECULES.filter((m) => m.id !== target.id && m.topic !== target.topic);
   const picks = [...shuffle(sameTopic).slice(0, 3), ...shuffle(others)].slice(0, 3);
   return shuffle([target.id, ...picks.map((m) => m.id)]);
 }
@@ -205,7 +207,7 @@ export function normalizeName(input: string): string {
     .normalize("NFKD")
     .replace(/[\u2010-\u2015]/g, "-")
     .replace(/\s+/g, "")
-    .replace(/[()\[\]{}]/g, "")
+    .replace(/[()[\]{}]/g, "")
     .replace(/,/g, "")
     .replace(/-/g, "")
     .replace(/^n(?=[a-z])/, "n");
