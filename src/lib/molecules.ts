@@ -1967,6 +1967,40 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
       -0.5,
     ),
   ),
+  extra(
+    "extra-3-ethyl-5-methylcyclohexan-1-one",
+    "O=C1CC(CC)CC(C)C1",
+    "3-ethyl-5-methylcyclohexan-1-one",
+    "advanced",
+    "Ketones",
+    ring(6, {
+      subs: [
+        { at: 0, els: ["O"], order: 2 },
+        { at: 2, els: ["C", "C"] },
+        { at: 4, els: ["C"] },
+      ],
+    }),
+  ),
+  extra(
+    "extra-4-bromo-22-dimethylcyclopentan-1-one",
+    "O=C1C(C)(C)CC(Br)C1",
+    "4-bromo-2,2-dimethylcyclopentan-1-one",
+    "advanced",
+    "Ketones",
+    attach(
+      ring(5, {
+        subs: [
+          { at: 0, els: ["O"], order: 2 },
+          { at: 1, els: ["C"] },
+          { at: 3, els: ["Br"] },
+        ],
+      }),
+      1,
+      "C",
+      -0.5,
+      -0.5,
+    ),
+  ),
 ];
 
 export const MOLECULES: Molecule[] = [...CORE_MOLECULES, ...ADDITIONAL_MOLECULES];
