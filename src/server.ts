@@ -9,6 +9,10 @@ type ServerEntry = {
 
 type Environment = { INSTRUCTOR_PASSWORD?: unknown };
 
+// Keep the guide completely unavailable unless it is deliberately re-enabled
+// in a future code change.
+const INSTRUCTOR_GUIDE_ENABLED = false;
+
 let serverEntryPromise: Promise<ServerEntry> | undefined;
 
 async function getServerEntry(): Promise<ServerEntry> {
@@ -70,6 +74,13 @@ function instructorAuthorized(request: Request, env: unknown): boolean {
 function instructorPasswordRequired(request: Request, env: unknown): Response | null {
   const { pathname } = new URL(request.url);
   if (pathname !== "/instructor" && pathname !== "/instructor/") return null;
+
+  if (!INSTRUCTOR_GUIDE_ENABLED) {
+    return new Response("Not found.", {
+      status: 404,
+      headers: { "content-type": "text/plain; charset=utf-8" },
+    });
+  }
 
   if (instructorAuthorized(request, env)) return null;
   const passwordConfigured = typeof (env as Environment).INSTRUCTOR_PASSWORD === "string";
