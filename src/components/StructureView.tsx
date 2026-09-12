@@ -24,7 +24,13 @@ function hydroxylHydrogen(structure: Structure, index: number): { x: number; y: 
   const dx = atom.x - neighbor.x;
   const dy = atom.y - neighbor.y;
   const length = Math.hypot(dx, dy) || 1;
-  return { x: atom.x + dx / length, y: atom.y + dy / length };
+  // Place the H close to O like a conventional OH label, while keeping it on
+  // the side away from the carbon bond.
+  const labelOffset = 0.44;
+  return {
+    x: atom.x + (dx / length) * labelOffset,
+    y: atom.y + (dy / length) * labelOffset,
+  };
 }
 
 export function StructureView({
