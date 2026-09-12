@@ -2,13 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Shell } from "@/components/Shell";
 import { ChartIcon, CheckIcon, CrossIcon } from "@/components/Icons";
-import {
-  byId,
-  clearHistory,
-  exportSession,
-  loadHistory,
-  type SessionResult,
-} from "@/lib/session";
+import { byId, clearHistory, exportSession, loadHistory, type SessionResult } from "@/lib/session";
 
 export const Route = createFileRoute("/results")({
   head: () => ({
@@ -29,6 +23,24 @@ export const Route = createFileRoute("/results")({
   component: Results,
 });
 
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (character) => {
+    const entities: Record<string, string> = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+    return entities[character]!;
+  });
+}
+
+function modeLabel(mode: SessionResult["settings"]["mode"]): string {
+  if (mode === "mixed") return "Mixed tasks";
+  return mode === "draw" ? "Draw from a Name" : "Name from a Structure";
+}
+
 function Results() {
   const [history, setHistory] = useState<SessionResult[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -48,6 +60,55 @@ function Results() {
     a.download = `nomenclature-results-${new Date(r.finishedAt).toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const downloadPdf = (r: SessionResult) => {
+    const report = window.open("", "_blank");
+    if (!report) {
+      window.print();
+      return;
+    }
+
+    report.opener = null;
+    const finishedAt = new Date(r.finishedAt).toLocaleString();
+    const rows = r.records
+      .map((record, index) => {
+        const molecule = byId(record.moleculeId);
+        return `<article class="question">
+          <div class="question-heading">
+            <span class="status ${record.correct ? "correct" : "incorrect"}">${record.correct ? "Correct" : "Incorrect"}</span>
+            <strong>${index + 1}. ${escapeHtml(molecule.displayName)}</strong>
+          </div>
+          <p class="meta">${record.kind === "draw" ? "Draw from a Name" : "Name from a Structure"} · ${escapeHtml(molecule.topic)} · ${record.attempts} attempt${record.attempts === 1 ? "" : "s"}${record.usedHint ? " · used hint" : ""}</p>
+          <p><strong>Student answer:</strong> ${escapeHtml(record.answer || "No answer")}</p>
+          <p><strong>Correct answer:</strong> ${escapeHtml(molecule.displayName)}</p>
+          <p class="explanation">${escapeHtml(molecule.explanation)}</p>
+        </article>`;
+      })
+      .join("");
+
+    report.document.write(`<!doctype html>
+      <html lang="en"><head><meta charset="utf-8"><title>Organic Nomenclature Results</title>
+      <style>
+        @page { margin: 0.6in; }
+        body { color: #18232d; font-family: Arial, sans-serif; line-height: 1.45; }
+        h1 { margin: 0; font-size: 24px; } h2 { margin-top: 28px; font-size: 18px; }
+        .summary { margin-top: 18px; padding: 16px; border: 1px solid #b8c4cf; border-radius: 10px; }
+        .score { font-size: 28px; font-weight: 700; } .meta { color: #52606d; font-size: 12px; }
+        .question { break-inside: avoid; margin: 12px 0; padding: 13px; border: 1px solid #d5dde5; border-radius: 8px; }
+        .question-heading { display: flex; align-items: center; gap: 9px; } .question p { margin: 7px 0; font-size: 13px; }
+        .status { border-radius: 999px; padding: 3px 7px; color: #fff; font-size: 11px; font-weight: 700; }
+        .correct { background: #237a45; } .incorrect { background: #b42318; } .explanation { color: #435363; }
+      </style></head><body>
+        <h1>Organic Nomenclature Studio — Results</h1>
+        <section class="summary"><div class="score">${r.score}/${r.total}</div>
+          <p>${escapeHtml(modeLabel(r.settings.mode))} · ${escapeHtml(r.settings.difficulty)} · completed ${escapeHtml(finishedAt)}</p>
+        </section>
+        <h2>Question review</h2>${rows}
+      </body></html>`);
+    report.document.close();
+    report.focus();
+    window.setTimeout(() => report.print(), 250);
   };
 
   if (loaded && !latest) {
@@ -88,11 +149,17 @@ function Results() {
                     : latest.settings.mode === "draw"
                       ? "Draw from a Name"
                       : "Name from a Structure"}{" "}
-                  · {latest.settings.difficulty} ·{" "}
-                  {new Date(latest.finishedAt).toLocaleString()}
+                  · {latest.settings.difficulty} · {new Date(latest.finishedAt).toLocaleString()}
                 </p>
               </div>
               <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => downloadPdf(latest)}
+                  className="rounded-xl border border-border px-4 py-2 text-sm font-semibold hover:bg-secondary"
+                >
+                  Download PDF
+                </button>
                 <button
                   type="button"
                   onClick={() => download(latest)}
