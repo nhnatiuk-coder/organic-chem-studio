@@ -1963,8 +1963,8 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
       }),
       1,
       "C",
-      -0.5,
-      -0.5,
+      0.75,
+      0.43,
     ),
   ),
   extra(
@@ -1997,8 +1997,8 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
       }),
       1,
       "C",
-      -0.5,
-      -0.5,
+      0.615,
+      0.615,
     ),
   ),
 ];
