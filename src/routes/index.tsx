@@ -48,12 +48,6 @@ function Landing() {
             >
               Start practicing
             </Link>
-            <Link
-              to="/instructor"
-              className="rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-semibold transition-colors hover:bg-secondary"
-            >
-              Instructor guide
-            </Link>
           </div>
           <p className="mt-4 text-xs text-muted-foreground">
             No account needed. Your progress is stored on this device only.
@@ -69,9 +63,7 @@ function Landing() {
           <p className="mt-4 text-center text-sm text-muted-foreground">
             What is this molecule called?
           </p>
-          <p className="mt-1 text-center font-display text-lg font-semibold">
-            {demo.displayName}
-          </p>
+          <p className="mt-1 text-center font-display text-lg font-semibold">{demo.displayName}</p>
         </div>
       </section>
 
@@ -125,15 +117,7 @@ function Landing() {
   );
 }
 
-function ModeCard({
-  icon,
-  title,
-  body,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  body: string;
-}) {
+function ModeCard({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-6">
       <span className="flex size-10 items-center justify-center rounded-xl bg-secondary text-primary">
