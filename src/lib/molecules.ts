@@ -9,6 +9,7 @@ export type Topic =
   | "Alkenes"
   | "Alkynes"
   | "Alcohols"
+  | "Thiols"
   | "Ethers"
   | "Aldehydes"
   | "Ketones"
@@ -38,7 +39,7 @@ export type Molecule = {
 
 const O2 = { at: 1, els: ["O"], order: 2 as const, dir: -1 as const };
 
-export const MOLECULES: Molecule[] = [
+const CORE_MOLECULES: Molecule[] = [
   // ---------------- Alkanes & branched alkanes ----------------
   {
     id: "pentane",
@@ -555,8 +556,7 @@ export const MOLECULES: Molecule[] = [
     difficulty: "intermediate",
     topic: "Amines",
     hint: "The nitrogen sits on the middle carbon of three.",
-    explanation:
-      "A primary amine on C2 of propane: propan-2-amine, commonly isopropylamine.",
+    explanation: "A primary amine on C2 of propane: propan-2-amine, commonly isopropylamine.",
     structure: chain(["C", "C", "C"], { subs: [{ at: 1, els: ["N"], dir: -1 }] }),
   },
   {
@@ -626,8 +626,7 @@ export const MOLECULES: Molecule[] = [
     difficulty: "intermediate",
     topic: "Alkyl halides",
     hint: "One carbon, three identical halogens — use a multiplying prefix.",
-    explanation:
-      "Methane with three chlorines: trichloromethane, historically used as chloroform.",
+    explanation: "Methane with three chlorines: trichloromethane, historically used as chloroform.",
     // CHCl3: the central carbon has three Cl atoms and one implicit H.
     structure: chain(["Cl", "C", "Cl"], { subs: [{ at: 1, els: ["Cl"], dir: 1 }] }),
   },
@@ -713,8 +712,7 @@ export const MOLECULES: Molecule[] = [
     difficulty: "intermediate",
     topic: "Amides",
     hint: "A carbonyl bonded to nitrogen gives the suffix -amide.",
-    explanation:
-      "Two-carbon acyl group bonded to NH2: ethanamide, traditionally acetamide.",
+    explanation: "Two-carbon acyl group bonded to NH2: ethanamide, traditionally acetamide.",
     structure: chain(["C", "C", "N"], { subs: [O2] }),
   },
   {
@@ -906,4 +904,942 @@ export const MOLECULES: Molecule[] = [
   },
 ];
 
-export const DIFFICULTIES: Difficulty[] = ["intro", "intermediate", "challenge"];
+/**
+ * Additional practice bank.  These are deliberately separate from the core
+ * examples above so the introductory set remains easy to inspect and edit.
+ * Each of the four selectable levels receives twenty new molecules.
+ */
+function extra(
+  id: string,
+  smiles: string,
+  displayName: string,
+  difficulty: Difficulty,
+  topic: Topic,
+  structure: Structure,
+): Molecule {
+  const guidance: Record<Topic, string> = {
+    Alkanes: "Count the longest continuous carbon chain, then use the -ane suffix.",
+    "Branched alkanes":
+      "Choose the longest chain and number it from the end giving the lowest locants.",
+    Cycloalkanes: "A closed, saturated carbon ring uses the cyclo- prefix.",
+    Alkenes: "Include the double bond in the parent chain and give it the lowest possible locant.",
+    Alkynes: "Include the triple bond in the parent chain and give it the lowest possible locant.",
+    Alcohols:
+      "Choose the longest chain containing OH and number from the end nearest the OH group.",
+    Thiols:
+      "Choose the longest chain containing SH and number from the end nearest the thiol group.",
+    Ethers: "Name the longer carbon chain as the parent and the smaller side as an alkoxy group.",
+    Aldehydes: "The aldehyde carbon is carbon 1 and supplies the -al suffix.",
+    Ketones:
+      "Choose the longest chain containing C=O and number from the end nearest the carbonyl.",
+    "Carboxylic acids": "The carboxyl carbon is carbon 1 and supplies the -oic acid suffix.",
+    Esters: "Name the alkyl group first, then the carboxylate portion.",
+    Amines: "Choose the longest chain attached to nitrogen and use the -amine suffix.",
+    "Alkyl halides":
+      "Treat the halogen as a substituent and number the parent chain for the lowest locant.",
+    "Benzene derivatives":
+      "Use benzene as the parent and assign substituent locants for the lowest set.",
+    Phenols: "Phenol is the parent; number the ring from the OH-bearing carbon.",
+    Amides: "The carbonyl attached to nitrogen supplies the -amide suffix.",
+  };
+  return {
+    id,
+    smiles,
+    displayName,
+    iupacNames: [displayName],
+    commonNames: [],
+    difficulty,
+    topic,
+    hint: guidance[topic],
+    explanation: `The correct systematic name is ${displayName}.`,
+    structure,
+  };
+}
+
+const ADDITIONAL_MOLECULES: Molecule[] = [
+  // ---------------- 20 additional intro questions ----------------
+  extra(
+    "extra-hexane",
+    "CCCCCC",
+    "hexane",
+    "intro",
+    "Alkanes",
+    chain(["C", "C", "C", "C", "C", "C"]),
+  ),
+  extra(
+    "extra-heptane",
+    "CCCCCCC",
+    "heptane",
+    "intro",
+    "Alkanes",
+    chain(["C", "C", "C", "C", "C", "C", "C"]),
+  ),
+  extra(
+    "extra-octane",
+    "CCCCCCCC",
+    "octane",
+    "intro",
+    "Alkanes",
+    chain(["C", "C", "C", "C", "C", "C", "C", "C"]),
+  ),
+  extra(
+    "extra-nonane",
+    "CCCCCCCCC",
+    "nonane",
+    "intro",
+    "Alkanes",
+    chain(["C", "C", "C", "C", "C", "C", "C", "C", "C"]),
+  ),
+  extra(
+    "extra-decan",
+    "CCCCCCCCCC",
+    "decane",
+    "intro",
+    "Alkanes",
+    chain(["C", "C", "C", "C", "C", "C", "C", "C", "C", "C"]),
+  ),
+  extra(
+    "extra-propan-1-ol",
+    "CCCO",
+    "propan-1-ol",
+    "intro",
+    "Alcohols",
+    chain(["C", "C", "C", "O"]),
+  ),
+  extra(
+    "extra-propan-2-ol",
+    "CC(O)C",
+    "propan-2-ol",
+    "intro",
+    "Alcohols",
+    chain(["C", "C", "C"], { subs: [{ at: 1, els: ["O"], dir: -1 }] }),
+  ),
+  extra(
+    "extra-butan-1-ol",
+    "CCCCO",
+    "butan-1-ol",
+    "intro",
+    "Alcohols",
+    chain(["C", "C", "C", "C", "O"]),
+  ),
+  extra("extra-ethanethiol", "CCS", "ethanethiol", "intro", "Thiols", chain(["C", "C", "S"])),
+  extra(
+    "extra-propan-1-thiol",
+    "CCCS",
+    "propan-1-thiol",
+    "intro",
+    "Thiols",
+    chain(["C", "C", "C", "S"]),
+  ),
+  extra(
+    "extra-1-chloropropane",
+    "CCCCl",
+    "1-chloropropane",
+    "intro",
+    "Alkyl halides",
+    chain(["C", "C", "C", "Cl"]),
+  ),
+  extra(
+    "extra-1-bromobutane",
+    "CCCCBr",
+    "1-bromobutane",
+    "intro",
+    "Alkyl halides",
+    chain(["C", "C", "C", "C", "Br"]),
+  ),
+  extra(
+    "extra-1-iodopropane",
+    "CCCI",
+    "1-iodopropane",
+    "intro",
+    "Alkyl halides",
+    chain(["C", "C", "C", "I"]),
+  ),
+  extra(
+    "extra-but-1-ene",
+    "C=CCC",
+    "but-1-ene",
+    "intro",
+    "Alkenes",
+    chain(["C", "C", "C", "C"], { orders: { 0: 2 } }),
+  ),
+  extra(
+    "extra-pent-1-ene",
+    "C=CCCC",
+    "pent-1-ene",
+    "intro",
+    "Alkenes",
+    chain(["C", "C", "C", "C", "C"], { orders: { 0: 2 } }),
+  ),
+  extra(
+    "extra-hex-1-yne",
+    "C#CCCCC",
+    "hex-1-yne",
+    "intro",
+    "Alkynes",
+    chain(["C", "C", "C", "C", "C", "C"], { orders: { 0: 3 } }),
+  ),
+  extra(
+    "extra-hept-1-yne",
+    "C#CCCCCC",
+    "hept-1-yne",
+    "intro",
+    "Alkynes",
+    chain(["C", "C", "C", "C", "C", "C", "C"], { orders: { 0: 3 } }),
+  ),
+  extra(
+    "extra-methanal",
+    "C=O",
+    "methanal",
+    "intro",
+    "Aldehydes",
+    chain(["C", "O"], { orders: { 0: 2 } }),
+  ),
+  extra(
+    "extra-butanal",
+    "CCCC=O",
+    "butanal",
+    "intro",
+    "Aldehydes",
+    chain(["C", "C", "C", "C"], { subs: [{ at: 3, els: ["O"], order: 2, dir: -1 }] }),
+  ),
+  extra(
+    "extra-pentan-2-one",
+    "CC(=O)CCC",
+    "pentan-2-one",
+    "intro",
+    "Ketones",
+    chain(["C", "C", "C", "C", "C"], { subs: [{ at: 1, els: ["O"], order: 2, dir: -1 }] }),
+  ),
+
+  // ---------------- 20 additional intermediate questions ----------------
+  extra(
+    "extra-2-methylhexane",
+    "CCCCC(C)C",
+    "2-methylhexane",
+    "intermediate",
+    "Branched alkanes",
+    chain(["C", "C", "C", "C", "C", "C"], { subs: [{ at: 4, els: ["C"], dir: -1 }] }),
+  ),
+  extra(
+    "extra-3-methylhexane",
+    "CCCC(C)CC",
+    "3-methylhexane",
+    "intermediate",
+    "Branched alkanes",
+    chain(["C", "C", "C", "C", "C", "C"], { subs: [{ at: 3, els: ["C"], dir: 1 }] }),
+  ),
+  extra(
+    "extra-22-dimethylbutane",
+    "CC(C)(C)CC",
+    "2,2-dimethylbutane",
+    "intermediate",
+    "Branched alkanes",
+    chain(["C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["C"], dir: -1 },
+        { at: 1, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-3-ethylpentane",
+    "CCC(CC)CC",
+    "3-ethylpentane",
+    "intermediate",
+    "Branched alkanes",
+    chain(["C", "C", "C", "C", "C"], { subs: [{ at: 2, els: ["C", "C"], dir: -1 }] }),
+  ),
+  extra("extra-cyclopentane", "C1CCCC1", "cyclopentane", "intermediate", "Cycloalkanes", ring(5)),
+  extra(
+    "extra-2-methylbut-1-ene",
+    "C=C(C)CC",
+    "2-methylbut-1-ene",
+    "intermediate",
+    "Alkenes",
+    chain(["C", "C", "C", "C"], { orders: { 0: 2 }, subs: [{ at: 1, els: ["C"], dir: -1 }] }),
+  ),
+  extra(
+    "extra-3-methylbut-1-ene",
+    "C=CC(C)C",
+    "3-methylbut-1-ene",
+    "intermediate",
+    "Alkenes",
+    chain(["C", "C", "C", "C"], { orders: { 0: 2 }, subs: [{ at: 2, els: ["C"], dir: -1 }] }),
+  ),
+  extra(
+    "extra-hex-2-ene",
+    "CC=CCCC",
+    "hex-2-ene",
+    "intermediate",
+    "Alkenes",
+    chain(["C", "C", "C", "C", "C", "C"], { orders: { 1: 2 } }),
+  ),
+  extra(
+    "extra-pent-2-yne",
+    "CC#CCC",
+    "pent-2-yne",
+    "intermediate",
+    "Alkynes",
+    chain(["C", "C", "C", "C", "C"], { orders: { 1: 3 } }),
+  ),
+  extra(
+    "extra-hex-2-yne",
+    "CC#CCCC",
+    "hex-2-yne",
+    "intermediate",
+    "Alkynes",
+    chain(["C", "C", "C", "C", "C", "C"], { orders: { 1: 3 } }),
+  ),
+  extra(
+    "extra-3-methylbutan-2-ol",
+    "CC(O)C(C)C",
+    "3-methylbutan-2-ol",
+    "intermediate",
+    "Alcohols",
+    chain(["C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["O"], dir: -1 },
+        { at: 2, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-2-methylpropan-1-ol",
+    "CC(C)CO",
+    "2-methylpropan-1-ol",
+    "intermediate",
+    "Alcohols",
+    chain(["C", "C", "C", "O"], { subs: [{ at: 1, els: ["C"], dir: -1 }] }),
+  ),
+  extra(
+    "extra-2-chlorobutane",
+    "CC(Cl)CC",
+    "2-chlorobutane",
+    "intermediate",
+    "Alkyl halides",
+    chain(["C", "C", "C", "C"], { subs: [{ at: 1, els: ["Cl"], dir: -1 }] }),
+  ),
+  extra(
+    "extra-1-bromo-2-methylpropane",
+    "CC(C)CBr",
+    "1-bromo-2-methylpropane",
+    "intermediate",
+    "Alkyl halides",
+    chain(["C", "C", "C", "Br"], { subs: [{ at: 1, els: ["C"], dir: -1 }] }),
+  ),
+  extra(
+    "extra-3-methylbutanal",
+    "CC(C)CC=O",
+    "3-methylbutanal",
+    "intermediate",
+    "Aldehydes",
+    chain(["C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["C"], dir: -1 },
+        { at: 3, els: ["O"], order: 2, dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-2-methylpropanal",
+    "CC(C)C=O",
+    "2-methylpropanal",
+    "intermediate",
+    "Aldehydes",
+    chain(["C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["C"], dir: -1 },
+        { at: 2, els: ["O"], order: 2, dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-3-methylpentanal",
+    "CCC(C)CC=O",
+    "3-methylpentanal",
+    "intermediate",
+    "Aldehydes",
+    chain(["C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 2, els: ["C"], dir: -1 },
+        { at: 4, els: ["O"], order: 2, dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-hexan-3-one",
+    "CCC(=O)CCC",
+    "hexan-3-one",
+    "intermediate",
+    "Ketones",
+    chain(["C", "C", "C", "C", "C", "C"], { subs: [{ at: 2, els: ["O"], order: 2, dir: -1 }] }),
+  ),
+  extra(
+    "extra-pentane-24-dione",
+    "CC(=O)CC(=O)C",
+    "pentane-2,4-dione",
+    "intermediate",
+    "Ketones",
+    chain(["C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["O"], order: 2, dir: -1 },
+        { at: 3, els: ["O"], order: 2, dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-3-chloropentan-2-one",
+    "CC(=O)C(Cl)CC",
+    "3-chloropentan-2-one",
+    "intermediate",
+    "Ketones",
+    chain(["C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["O"], order: 2, dir: -1 },
+        { at: 2, els: ["Cl"], dir: 1 },
+      ],
+    }),
+  ),
+
+  // ---------------- 20 additional challenge questions ----------------
+  extra(
+    "extra-33-dimethylpentane",
+    "CCC(C)(C)CC",
+    "3,3-dimethylpentane",
+    "challenge",
+    "Branched alkanes",
+    chain(["C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 2, els: ["C"], dir: -1 },
+        { at: 2, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-24-dimethylhexane",
+    "CCC(C)CC(C)C",
+    "2,4-dimethylhexane",
+    "challenge",
+    "Branched alkanes",
+    chain(["C", "C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 2, els: ["C"], dir: -1 },
+        { at: 4, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-3-ethyl-2-methylhexane",
+    "CCCC(CC)C(C)C",
+    "3-ethyl-2-methylhexane",
+    "challenge",
+    "Branched alkanes",
+    chain(["C", "C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 3, els: ["C", "C"], dir: -1 },
+        { at: 4, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-3-methylhex-2-ene",
+    "CC=C(C)CCC",
+    "3-methylhex-2-ene",
+    "challenge",
+    "Alkenes",
+    chain(["C", "C", "C", "C", "C", "C"], {
+      orders: { 1: 2 },
+      subs: [{ at: 2, els: ["C"], dir: -1 }],
+    }),
+  ),
+  extra(
+    "extra-4-methylpent-2-yne",
+    "CC#CC(C)C",
+    "4-methylpent-2-yne",
+    "challenge",
+    "Alkynes",
+    chain(["C", "C", "C", "C", "C"], { orders: { 1: 3 }, subs: [{ at: 3, els: ["C"], dir: -1 }] }),
+  ),
+  extra(
+    "extra-3-methylbut-1-yne",
+    "C#CC(C)C",
+    "3-methylbut-1-yne",
+    "challenge",
+    "Alkynes",
+    chain(["C", "C", "C", "C"], { orders: { 0: 3 }, subs: [{ at: 2, els: ["C"], dir: -1 }] }),
+  ),
+  extra(
+    "extra-4-methylpentan-2-ol",
+    "CC(O)CC(C)C",
+    "4-methylpentan-2-ol",
+    "challenge",
+    "Alcohols",
+    chain(["C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["O"], dir: -1 },
+        { at: 3, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-2-methylpentan-3-ol",
+    "CC(C)C(O)CC",
+    "2-methylpentan-3-ol",
+    "challenge",
+    "Alcohols",
+    chain(["C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["C"], dir: -1 },
+        { at: 2, els: ["O"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-3-chloro-2-methylbutan-1-ol",
+    "OCCC(Cl)C(C)",
+    "3-chloro-2-methylbutan-1-ol",
+    "challenge",
+    "Alcohols",
+    chain(["O", "C", "C", "C", "C"], {
+      subs: [
+        { at: 3, els: ["Cl"], dir: -1 },
+        { at: 2, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-2-bromo-3-methylbutan-1-ol",
+    "OCC(Br)C(C)C",
+    "2-bromo-3-methylbutan-1-ol",
+    "challenge",
+    "Alcohols",
+    chain(["O", "C", "C", "C", "C"], {
+      subs: [
+        { at: 2, els: ["Br"], dir: -1 },
+        { at: 3, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-3-methylbutane-2-thiol",
+    "CC(S)C(C)C",
+    "3-methylbutane-2-thiol",
+    "challenge",
+    "Thiols",
+    chain(["C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["S"], dir: -1 },
+        { at: 2, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-2-chloro-3-methylbutane-1-thiol",
+    "SCC(Cl)C(C)C",
+    "2-chloro-3-methylbutane-1-thiol",
+    "challenge",
+    "Thiols",
+    chain(["S", "C", "C", "C", "C"], {
+      subs: [
+        { at: 2, els: ["Cl"], dir: -1 },
+        { at: 3, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-4-bromo-3-methylbutan-2-one",
+    "CC(=O)C(C)CBr",
+    "4-bromo-3-methylbutan-2-one",
+    "challenge",
+    "Ketones",
+    chain(["C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["O"], order: 2, dir: -1 },
+        { at: 2, els: ["C"], dir: 1 },
+        { at: 3, els: ["Br"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-5-chloro-3-methylpentan-2-one",
+    "CC(=O)C(C)CCCl",
+    "5-chloro-3-methylpentan-2-one",
+    "challenge",
+    "Ketones",
+    chain(["C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["O"], order: 2, dir: -1 },
+        { at: 2, els: ["C"], dir: 1 },
+        { at: 4, els: ["Cl"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-3-hydroxybutanal",
+    "O=CCC(O)C",
+    "3-hydroxybutanal",
+    "challenge",
+    "Aldehydes",
+    chain(["C", "C", "C", "C"], {
+      subs: [
+        { at: 0, els: ["O"], order: 2, dir: -1 },
+        { at: 2, els: ["O"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-4-chlorobutanal",
+    "O=CCCCCl",
+    "4-chlorobutanal",
+    "challenge",
+    "Aldehydes",
+    chain(["C", "C", "C", "C"], {
+      subs: [
+        { at: 0, els: ["O"], order: 2, dir: -1 },
+        { at: 3, els: ["Cl"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-3-bromo-2-methylpropanal",
+    "O=CC(C)CBr",
+    "3-bromo-2-methylpropanal",
+    "challenge",
+    "Aldehydes",
+    chain(["C", "C", "C"], {
+      subs: [
+        { at: 0, els: ["O"], order: 2, dir: -1 },
+        { at: 1, els: ["C"], dir: 1 },
+        { at: 2, els: ["Br"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-2-chloro-3-methylbutanal",
+    "O=CC(Cl)C(C)C",
+    "2-chloro-3-methylbutanal",
+    "challenge",
+    "Aldehydes",
+    chain(["C", "C", "C", "C"], {
+      subs: [
+        { at: 0, els: ["O"], order: 2, dir: -1 },
+        { at: 1, els: ["Cl"], dir: 1 },
+        { at: 2, els: ["C"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-3-bromo-2-methylpentane",
+    "CCC(Br)C(C)C",
+    "3-bromo-2-methylpentane",
+    "challenge",
+    "Alkyl halides",
+    chain(["C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 2, els: ["Br"], dir: -1 },
+        { at: 3, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-1-chloro-2-3-dimethylbutane",
+    "ClCC(C)C(C)C",
+    "1-chloro-2,3-dimethylbutane",
+    "challenge",
+    "Alkyl halides",
+    chain(["Cl", "C", "C", "C", "C"], {
+      subs: [
+        { at: 2, els: ["C"], dir: -1 },
+        { at: 3, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+
+  // ---------------- 20 additional advanced questions ----------------
+  extra(
+    "extra-4-hydroxy-2-methylpentanal",
+    "O=CC(C)CC(O)C",
+    "4-hydroxy-2-methylpentanal",
+    "advanced",
+    "Aldehydes",
+    chain(["C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 0, els: ["O"], order: 2, dir: -1 },
+        { at: 1, els: ["C"], dir: 1 },
+        { at: 3, els: ["O"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-5-hydroxy-3-methylhexanal",
+    "O=CCC(C)CC(O)",
+    "5-hydroxy-3-methylhexanal",
+    "advanced",
+    "Aldehydes",
+    chain(["C", "C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 0, els: ["O"], order: 2, dir: -1 },
+        { at: 2, els: ["C"], dir: 1 },
+        { at: 4, els: ["O"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-4-bromo-3-hydroxypentanal",
+    "O=CCC(O)C(Br)C",
+    "4-bromo-3-hydroxypentanal",
+    "advanced",
+    "Aldehydes",
+    chain(["C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 0, els: ["O"], order: 2, dir: -1 },
+        { at: 2, els: ["O"], dir: 1 },
+        { at: 3, els: ["Br"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-5-chloro-3-ethylhex-2-enal",
+    "O=CC=C(CC)CC(Cl)C",
+    "5-chloro-3-ethylhex-2-enal",
+    "advanced",
+    "Aldehydes",
+    chain(["C", "C", "C", "C", "C", "C"], {
+      orders: { 1: 2 },
+      subs: [
+        { at: 0, els: ["O"], order: 2, dir: -1 },
+        { at: 2, els: ["C", "C"], dir: 1 },
+        { at: 4, els: ["Cl"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-6-bromo-4-methylhept-2-enal",
+    "O=CC=CC(C)CC(Br)C",
+    "6-bromo-4-methylhept-2-enal",
+    "advanced",
+    "Aldehydes",
+    chain(["C", "C", "C", "C", "C", "C", "C"], {
+      orders: { 1: 2 },
+      subs: [
+        { at: 0, els: ["O"], order: 2, dir: -1 },
+        { at: 3, els: ["C"], dir: 1 },
+        { at: 5, els: ["Br"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-4-hydroxy-3-methylhexan-2-one",
+    "CC(=O)C(C)C(O)CC",
+    "4-hydroxy-3-methylhexan-2-one",
+    "advanced",
+    "Ketones",
+    chain(["C", "C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["O"], order: 2, dir: -1 },
+        { at: 2, els: ["C"], dir: 1 },
+        { at: 3, els: ["O"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-5-bromo-4-methylhexan-2-one",
+    "CC(=O)CC(C)C(Br)C",
+    "5-bromo-4-methylhexan-2-one",
+    "advanced",
+    "Ketones",
+    chain(["C", "C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["O"], order: 2, dir: -1 },
+        { at: 3, els: ["C"], dir: 1 },
+        { at: 4, els: ["Br"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-6-chloro-4-hydroxyheptan-3-one",
+    "CCC(=O)C(O)CC(Cl)C",
+    "6-chloro-4-hydroxyheptan-3-one",
+    "advanced",
+    "Ketones",
+    chain(["C", "C", "C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 2, els: ["O"], order: 2, dir: -1 },
+        { at: 3, els: ["O"], dir: 1 },
+        { at: 5, els: ["Cl"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-5-hydroxy-4-methylhex-3-yn-2-one",
+    "CC(=O)C#C(C)C(O)",
+    "5-hydroxy-4-methylhex-3-yn-2-one",
+    "advanced",
+    "Ketones",
+    chain(["C", "C", "C", "C", "C", "C"], {
+      orders: { 2: 3 },
+      subs: [
+        { at: 1, els: ["O"], order: 2, dir: -1 },
+        { at: 3, els: ["C"], dir: 1 },
+        { at: 4, els: ["O"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-4-chloro-5-methylhex-3-yn-2-one",
+    "CC(=O)C#C(Cl)C(C)C",
+    "4-chloro-5-methylhex-3-yn-2-one",
+    "advanced",
+    "Ketones",
+    chain(["C", "C", "C", "C", "C", "C"], {
+      orders: { 2: 3 },
+      subs: [
+        { at: 1, els: ["O"], order: 2, dir: -1 },
+        { at: 3, els: ["Cl"], dir: 1 },
+        { at: 4, els: ["C"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-4-bromo-3-ethylhexan-2-one",
+    "CC(=O)C(CC)C(Br)CC",
+    "4-bromo-3-ethylhexan-2-one",
+    "advanced",
+    "Ketones",
+    chain(["C", "C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["O"], order: 2, dir: -1 },
+        { at: 2, els: ["C", "C"], dir: 1 },
+        { at: 3, els: ["Br"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-4-chloro-3-methylhex-2-en-1-ol",
+    "OCC=C(C)C(Cl)CC",
+    "4-chloro-3-methylhex-2-en-1-ol",
+    "advanced",
+    "Alcohols",
+    chain(["O", "C", "C", "C", "C", "C", "C"], {
+      orders: { 2: 2 },
+      subs: [
+        { at: 3, els: ["C"], dir: 1 },
+        { at: 4, els: ["Cl"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-5-bromo-3-methylhex-2-en-1-ol",
+    "OCC=C(C)C(Br)CC",
+    "5-bromo-3-methylhex-2-en-1-ol",
+    "advanced",
+    "Alcohols",
+    chain(["O", "C", "C", "C", "C", "C", "C"], {
+      orders: { 2: 2 },
+      subs: [
+        { at: 3, els: ["C"], dir: 1 },
+        { at: 5, els: ["Br"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-4-methylhex-3-yn-2-ol",
+    "CC(O)C#C(C)CC",
+    "4-methylhex-3-yn-2-ol",
+    "advanced",
+    "Alcohols",
+    chain(["C", "C", "C", "C", "C", "C"], {
+      orders: { 2: 3 },
+      subs: [
+        { at: 1, els: ["O"], dir: -1 },
+        { at: 3, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-3-chloro-2-methylhexan-1-thiol",
+    "SCC(Cl)C(C)CCC",
+    "3-chloro-2-methylhexan-1-thiol",
+    "advanced",
+    "Thiols",
+    chain(["S", "C", "C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 3, els: ["Cl"], dir: -1 },
+        { at: 2, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-4-bromo-3-methylpentan-2-thiol",
+    "CC(S)C(C)C(Br)C",
+    "4-bromo-3-methylpentan-2-thiol",
+    "advanced",
+    "Thiols",
+    chain(["C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["S"], dir: -1 },
+        { at: 2, els: ["C"], dir: 1 },
+        { at: 3, els: ["Br"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-3-bromo-4-chloro-2-methylhexane",
+    "CC(C)C(Br)C(Cl)CC",
+    "3-bromo-4-chloro-2-methylhexane",
+    "advanced",
+    "Alkyl halides",
+    chain(["C", "C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 2, els: ["Br"], dir: -1 },
+        { at: 3, els: ["Cl"], dir: 1 },
+        { at: 1, els: ["C"], dir: -1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-1-bromo-3-chloro-2-methylpentane",
+    "BrCC(Cl)C(C)CC",
+    "1-bromo-3-chloro-2-methylpentane",
+    "advanced",
+    "Alkyl halides",
+    chain(["Br", "C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 3, els: ["Cl"], dir: -1 },
+        { at: 2, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-4-ethyl-3-methylheptane",
+    "CCCC(CC)C(C)CCC",
+    "4-ethyl-3-methylheptane",
+    "advanced",
+    "Branched alkanes",
+    chain(["C", "C", "C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 3, els: ["C", "C"], dir: -1 },
+        { at: 2, els: ["C"], dir: 1 },
+      ],
+    }),
+  ),
+  extra(
+    "extra-3-ethyl-2-4-dimethylhexane",
+    "CCC(C)C(CC)C(C)CC",
+    "3-ethyl-2,4-dimethylhexane",
+    "advanced",
+    "Branched alkanes",
+    chain(["C", "C", "C", "C", "C", "C"], {
+      subs: [
+        { at: 1, els: ["C"], dir: -1 },
+        { at: 2, els: ["C", "C"], dir: 1 },
+        { at: 3, els: ["C"], dir: -1 },
+      ],
+    }),
+  ),
+];
+
+export const MOLECULES: Molecule[] = [...CORE_MOLECULES, ...ADDITIONAL_MOLECULES];
+
+export const DIFFICULTIES: Difficulty[] = ["intro", "intermediate", "challenge", "advanced"];
