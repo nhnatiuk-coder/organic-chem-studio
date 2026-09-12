@@ -28,7 +28,7 @@ export const Route = createFileRoute("/practice/run")({
       {
         name: "description",
         content:
-          "Work through your organic nomenclature set with hints, two attempts per question and a worked explanation.",
+          "Work through your organic nomenclature set with hints, three attempts per question and a worked explanation.",
       },
       { property: "og:title", content: "Practice questions" },
       {
@@ -42,6 +42,7 @@ export const Route = createFileRoute("/practice/run")({
 });
 
 type Phase = "answering" | "retry" | "resolved";
+const MAX_ATTEMPTS = 3;
 
 function Runner() {
   const navigate = useNavigate();
@@ -119,7 +120,7 @@ function Runner() {
       return;
     }
     setMessage("That structure does not match the name. Recount the parent chain and branches.");
-    if (attemptCount >= 2) {
+    if (attemptCount >= MAX_ATTEMPTS) {
       resolve(false, answer, attemptCount);
       setMessage(`Not matched. The correct structure for ${molecule.displayName} is shown below.`);
     } else {
@@ -154,7 +155,7 @@ function Runner() {
       } else {
         setMessage("Not quite. Check the parent chain, the locants and the suffix.");
       }
-      if (attemptCount >= 2) {
+      if (attemptCount >= MAX_ATTEMPTS) {
         resolve(false, answer, attemptCount);
         setMessage(`Answer: ${molecule.iupacNames[0]}.`);
       } else {
@@ -436,12 +437,14 @@ function Runner() {
               {checking
                 ? "Checking…"
                 : phase === "retry"
-                  ? "Check again (last attempt)"
+                  ? attempts === MAX_ATTEMPTS - 1
+                    ? "Check again (last attempt)"
+                    : "Check again"
                   : "Check answer"}
             </button>
           )}
           <span className="text-xs text-muted-foreground">
-            Attempt {Math.min(attempts + (phase === "resolved" ? 0 : 1), 2)} of 2
+            Attempt {Math.min(attempts + (phase === "resolved" ? 0 : 1), MAX_ATTEMPTS)} of {MAX_ATTEMPTS}
           </span>
         </div>
       </div>

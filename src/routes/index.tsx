@@ -38,7 +38,7 @@ function Landing() {
           </h1>
           <p className="mt-4 max-w-xl text-base leading-relaxed text-muted-foreground">
             Work through short, self-paced sets that alternate between building a structure from a
-            name and naming a structure you are shown. Hints, two attempts, and a worked
+            name and naming a structure you are shown. Hints, three attempts, and a worked
             explanation on every question.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
