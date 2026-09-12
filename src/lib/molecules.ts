@@ -1744,16 +1744,16 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
     }),
   ),
   extra(
-    "extra-4-methylhex-3-yn-2-ol",
-    "CC(O)C#C(C)CC",
-    "4-methylhex-3-yn-2-ol",
+    "extra-5-methylhex-3-yn-2-ol",
+    "CC(O)C#CC(C)C",
+    "5-methylhex-3-yn-2-ol",
     "advanced",
     "Alcohols",
     chain(["C", "C", "C", "C", "C", "C"], {
       orders: { 2: 3 },
       subs: [
         { at: 1, els: ["O"], dir: -1 },
-        { at: 3, els: ["C"], dir: 1 },
+        { at: 4, els: ["C"], dir: 1 },
       ],
     }),
   ),
