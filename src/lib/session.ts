@@ -225,11 +225,7 @@ export function normalizeName(input: string): string {
     .toLowerCase()
     .normalize("NFKD")
     .replace(/[\u2010-\u2015]/g, "-")
-    .replace(/\s+/g, "")
-    .replace(/[()[\]{}]/g, "")
-    .replace(/,/g, "")
-    .replace(/-/g, "")
-    .replace(/^n(?=[a-z])/, "n");
+    .trim();
 }
 
 /**
