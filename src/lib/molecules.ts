@@ -1400,7 +1400,7 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
   ),
   extra(
     "extra-3-chloro-2-methylbutan-1-ol",
-    "OCCC(Cl)C(C)",
+    "OCC(C)C(Cl)C",
     "3-chloro-2-methylbutan-1-ol",
     "challenge",
     "Alcohols",
