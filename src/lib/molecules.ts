@@ -1029,7 +1029,7 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
   extra(
     "extra-propan-1-thiol",
     "CCCS",
-    "propan-1-thiol",
+    "propane-1-thiol",
     "intro",
     "Thiols",
     chain(["C", "C", "C", "S"]),
@@ -1793,7 +1793,7 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
   extra(
     "extra-3-chloro-2-methylhexan-1-thiol",
     "SCC(Cl)C(C)CCC",
-    "3-chloro-2-methylhexan-1-thiol",
+    "3-chloro-2-methylhexane-1-thiol",
     "advanced",
     "Thiols",
     chain(["S", "C", "C", "C", "C", "C", "C"], {
@@ -1806,7 +1806,7 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
   extra(
     "extra-4-bromo-3-methylpentan-2-thiol",
     "CC(S)C(C)C(Br)C",
-    "4-bromo-3-methylpentan-2-thiol",
+    "4-bromo-3-methylpentane-2-thiol",
     "advanced",
     "Thiols",
     chain(["C", "C", "C", "C", "C"], {
