@@ -243,6 +243,11 @@ function iupacAnswerForms(name: string): string[] {
   // pentan-2-one and propan-2-ol  <=>  2-pentanone and 2-propanol
   forms.add(name.replace(/([a-z]*an)-(\d+)-(one|ol)(?=$|-)/g, "$2-$1$3"));
 
+  // In a monocyclic ketone, the carbonyl carbon is C1 by definition, so
+  // `cyclohexan-1-one` and `cyclohexanone` are equivalent. This also keeps
+  // substituent locants intact, e.g. `2-methylcyclohexan-1-one`.
+  forms.add(name.replace(/(cyclo[a-z]*an)-1-one(?=$|-)/g, "$1one"));
+
   return [...forms];
 }
 
