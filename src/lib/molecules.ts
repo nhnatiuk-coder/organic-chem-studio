@@ -1576,7 +1576,7 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
   ),
   extra(
     "extra-5-hydroxy-3-methylhexanal",
-    "O=CCC(C)CC(O)",
+    "O=CCC(C)CC(O)C",
     "5-hydroxy-3-methylhexanal",
     "advanced",
     "Aldehydes",
@@ -1764,7 +1764,7 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
   ),
   extra(
     "extra-5-bromo-3-methylhex-2-en-1-ol",
-    "OCC=C(C)C(Br)CC",
+    "OCC=C(C)CC(Br)C",
     "5-bromo-3-methylhex-2-en-1-ol",
     "advanced",
     "Alcohols",
@@ -1792,7 +1792,7 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
   ),
   extra(
     "extra-3-chloro-2-methylhexan-1-thiol",
-    "SCC(Cl)C(C)CCC",
+    "SCC(C)C(Cl)CCC",
     "3-chloro-2-methylhexane-1-thiol",
     "advanced",
     "Thiols",
@@ -1833,7 +1833,7 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
   ),
   extra(
     "extra-1-bromo-3-chloro-2-methylpentane",
-    "BrCC(Cl)C(C)CC",
+    "BrCC(C)C(Cl)CC",
     "1-bromo-3-chloro-2-methylpentane",
     "advanced",
     "Alkyl halides",
@@ -1846,7 +1846,7 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
   ),
   extra(
     "extra-4-ethyl-3-methylheptane",
-    "CCCC(CC)C(C)CCC",
+    "CCC(C)C(CC)CCC",
     "4-ethyl-3-methylheptane",
     "advanced",
     "Branched alkanes",
@@ -1859,7 +1859,7 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
   ),
   extra(
     "extra-3-ethyl-2-4-dimethylhexane",
-    "CCC(C)C(CC)C(C)CC",
+    "CC(C)C(CC)C(C)CC",
     "3-ethyl-2,4-dimethylhexane",
     "advanced",
     "Branched alkanes",
@@ -1954,7 +1954,7 @@ const ADDITIONAL_MOLECULES: Molecule[] = [
   ),
   extra(
     "extra-1-bromo-4-ethyl-2-methylcyclohexane",
-    "BrC1C(C)C(CC)CCC1",
+    "BrC1C(C)CC(CC)CC1",
     "1-bromo-4-ethyl-2-methylcyclohexane",
     "advanced",
     "Cycloalkanes",
