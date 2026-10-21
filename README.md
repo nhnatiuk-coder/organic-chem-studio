@@ -63,8 +63,8 @@ lockfile and replaces the original Bun lockfile:
 
 ```sh
 npm ci
-npm run build
-npm test
+npm run build:azure
+npm run test:azure
 npm start
 ```
 
@@ -91,3 +91,44 @@ portal generate its Azure workflow and hosting settings.
 The automated deployment test starts the production server on an assigned port
 and checks the home, practice, and results routes, the stylesheet, the Ketcher
 WebAssembly response, and the existing instructor and missing-page 404 behavior.
+
+## Cloudflare Workers publishing
+
+Use the same Node.js 24 runtime as the Azure build. `.node-version` selects
+24.19.0 for Cloudflare's build environment. If the dashboard already defines
+`NODE_VERSION`, set it to 24.19.0 as well.
+
+Build command:
+
+```sh
+npm run build:cloudflare
+```
+
+Keep the existing deploy command:
+
+```sh
+npx wrangler deploy --config .output/server/wrangler.json --name organic-chem-studio
+```
+
+The Cloudflare build generates `.output/server/wrangler.json`, its Worker entry,
+and static assets under `.output/public`. The Azure build continues to generate
+`dist/client` and `dist/server` for `npm start`; neither target overwrites the
+other target's output.
+
+The existing `npm run build` command also selects Cloudflare automatically when
+Cloudflare Workers Builds supplies `WORKERS_CI=1`. Outside that environment it
+uses the Azure/Express target. Use `build:azure` or `build:cloudflare` to choose
+explicitly. Lovable keeps its own publishing target through its config wrapper.
+
+To verify both targets locally:
+
+```sh
+npm run build:azure
+npm run build:cloudflare
+npm run test:all
+```
+
+`npm test` and `npm run test:azure` test the production Express server after an Azure build.
+`npm run test:cloudflare` checks the generated Worker configuration and Ketcher
+WebAssembly assets after a Cloudflare build. Each target can be tested independently;
+`npm run test:all` checks both after building both targets.

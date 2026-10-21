@@ -1,5 +1,5 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
-import type { Plugin } from "vite";
+import type { ConfigEnv, Plugin } from "vite";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
@@ -14,6 +14,9 @@ const ketcherWasmAsset = (): Plugin => ({
   name: "ketcher-indigo-wasm-asset",
   apply: "build" as const,
   generateBundle() {
+    // Ketcher runs in the browser; emitting here during SSR bundles the large
+    // engine into the Cloudflare Worker as well as the static asset directory.
+    if (this.environment.name !== "client") return;
     this.emitFile({
       type: "asset",
       fileName: "assets/indigo-ketcher-1.46.0.wasm",
@@ -52,25 +55,40 @@ const ketcherEventsShim = () => ({
   },
 });
 
-export default defineConfig({
-  // Express owns the listening socket; Nitro exports a Node middleware handler.
-  nitro: {
-    preset: "node-middleware",
-    output: { dir: "dist", publicDir: "dist/client", serverDir: "dist/server" },
-  },
-  tanstackStart: {
-    server: { entry: "server" },
-  },
-  vite: {
-    plugins: [ketcherAssertShim(), ketcherEventsShim(), ketcherWasmAsset()],
-    define: {
-      global: "globalThis",
+export default (env: ConfigEnv) => {
+  // Explicit Azure mode takes precedence over Cloudflare's CI environment.
+  const cloudflare =
+    env.mode === "cloudflare" || (env.mode !== "azure" && process.env["WORKERS_CI"] === "1");
+
+  return defineConfig({
+    nitro: cloudflare
+      ? {
+          preset: "cloudflare-module",
+          output: {
+            dir: ".output",
+            publicDir: ".output/public",
+            serverDir: ".output/server",
+          },
+          cloudflare: { nodeCompat: true, deployConfig: true },
+        }
+      : {
+          preset: "node-middleware",
+          output: { dir: "dist", publicDir: "dist/client", serverDir: "dist/server" },
+        },
+    tanstackStart: {
+      server: { entry: "server" },
     },
-    resolve: {
-      alias: [{ find: /^events$/, replacement: "events/events.js" }],
+    vite: {
+      plugins: [ketcherAssertShim(), ketcherEventsShim(), ketcherWasmAsset()],
+      define: {
+        global: "globalThis",
+      },
+      resolve: {
+        alias: [{ find: /^events$/, replacement: "events/events.js" }],
+      },
+      optimizeDeps: {
+        include: ["events"],
+      },
     },
-    optimizeDeps: {
-      include: ["events"],
-    },
-  },
-});
+  })(env);
+};
