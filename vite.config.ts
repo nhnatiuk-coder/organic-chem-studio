@@ -1,4 +1,5 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import type { Plugin } from "vite";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
@@ -6,13 +7,10 @@ import { dirname, join } from "node:path";
 const require = createRequire(import.meta.url);
 const browserEventsPath = require.resolve("events/events.js");
 const indigoWasm = readFileSync(
-  join(
-    dirname(require.resolve("indigo-ketcher")),
-    "indigo-ketcher-1.46.0.wasm",
-  ),
+  join(dirname(require.resolve("indigo-ketcher")), "indigo-ketcher-1.46.0.wasm"),
 );
 
-const ketcherWasmAsset = () => ({
+const ketcherWasmAsset = (): Plugin => ({
   name: "ketcher-indigo-wasm-asset",
   apply: "build" as const,
   generateBundle() {
@@ -55,15 +53,16 @@ const ketcherEventsShim = () => ({
 });
 
 export default defineConfig({
+  // Express owns the listening socket; Nitro exports a Node middleware handler.
+  nitro: {
+    preset: "node-middleware",
+    output: { dir: "dist", publicDir: "dist/client", serverDir: "dist/server" },
+  },
   tanstackStart: {
     server: { entry: "server" },
   },
   vite: {
-    plugins: [
-      ketcherAssertShim(),
-      ketcherEventsShim(),
-      ketcherWasmAsset(),
-    ],
+    plugins: [ketcherAssertShim(), ketcherEventsShim(), ketcherWasmAsset()],
     define: {
       global: "globalThis",
     },

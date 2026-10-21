@@ -3,6 +3,7 @@
 Build a separate, polished web application named "Organic Nomenclature Studio" designed as a Canvas-ready organic chemistry practice activity.
 
 Core student experience:
+
 - Landing screen briefly explains two modes: "Draw from a Name" and "Name from a Structure".
 - Practice setup lets students select mode (mixed / draw / name), difficulty (intro, intermediate, challenge), and number of questions (5, 10, 15, 20).
 - The question runner has a clear progress indicator, question number, score, and a small optional hint button.
@@ -11,6 +12,7 @@ Core student experience:
 - Feedback shows correct/incorrect, accepted correct names, a concise explanation, and Next Question. First incorrect attempt must keep the question active and reveal a hint; after a second attempt show the answer.
 
 Question content requirements:
+
 - Seed at least 30 genuinely distinct molecules. Do not merely vary a leaving group or a simple substituent on the same skeleton.
 - Cover alkanes, cycloalkanes, branched alkanes, alkenes (including E/Z where applicable), alkynes, alcohols, ethers, aldehydes, ketones, carboxylic acids, esters, amines, alkyl halides, benzene derivatives, phenols, and simple amides.
 - Each molecule record must include canonical SMILES, displayName, acceptedNames array with IUPAC and common-name variants where widely used, difficulty, topic, helpful hint, explanation, and an SVG structure rendering or enough data to render a crisp SVG.
@@ -18,11 +20,13 @@ Question content requirements:
 - Make questions randomly selected without repeats until the active set ends.
 
 Instructor/admin experience:
+
 - Add a clearly separated Instructor Guide screen explaining how to edit the question bank, add aliases, enable a real Ketcher editor, host the app, and place it in Canvas as an External URL or iframe embed.
 - Provide downloadable-friendly JSON export/import controls for question-bank records in the UI, and use localStorage to preserve any edits for demo purposes.
 - Include a simple instructor setting to toggle common names accepted on/off (when off, only stored IUPAC-style aliases count).
 
 Technical/design:
+
 - Use React + TypeScript, accessible semantic controls, Tailwind/shadcn-style design, responsive layout, no sign-in requirement, and robust localStorage.
 - Use calm chemistry-inspired visual styling (navy, teal, amber; ample whitespace) with original simple line icons, not stock images.
 - Do not claim native Canvas grade passback or LTI support. State that the standalone version is embed/launch-ready and that grade passback needs a later LTI integration.
@@ -48,3 +52,42 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## CU Launch / Azure publishing
+
+The repository runs as a root Express app. Express serves the production files
+and forwards page requests to the existing TanStack Start application.
+
+Use Node.js 24 (24.14.1 or newer) and npm. Ketcher 3.18 requires this Node version. `package-lock.json` is the deployment
+lockfile and replaces the original Bun lockfile:
+
+```sh
+npm ci
+npm run build
+npm test
+npm start
+```
+
+- Entry point: `server.js`; production startup command: `npm start`.
+- The server listens on `0.0.0.0` using Azure's `PORT` environment variable
+  (defaults to `3000` locally).
+- The build produces `dist/client` and `dist/server`. Both folders must
+  be included with `server.js`, `package.json`, and the production dependencies.
+  `dist` is generated during publishing and should not be committed.
+- `nitro.config.ts` prevents Nitro from treating the Express launcher as its
+  own handler. `vite.config.ts` selects the Node middleware build target.
+- Ketcher's WebAssembly engine is built and served locally with the app.
+- No database or secret environment variables are required for student practice.
+  Progress continues to be stored in the student's browser.
+- `npm run dev` starts the development server; `npm run preview` starts the
+  production Express server after a build.
+
+In [CU Launch](https://launch.cedarville.edu), add the repository as an existing
+GitHub app, then retry publishing preparation after these changes have been
+pushed to the repository that CU Launch scans. If CU Launch has already created
+its managed Cedarville copy, apply the changes to that copy as well. Let the
+portal generate its Azure workflow and hosting settings.
+
+The automated deployment test starts the production server on an assigned port
+and checks the home, practice, and results routes, the stylesheet, the Ketcher
+WebAssembly response, and the existing instructor and missing-page 404 behavior.
